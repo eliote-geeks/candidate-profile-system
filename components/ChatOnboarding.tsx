@@ -218,6 +218,7 @@ export default function ChatOnboarding() {
     if (editingField) {
       setEditingField(null);
       setIsReviewMode(true);
+      setIsLoading(false);
       return;
     }
 
