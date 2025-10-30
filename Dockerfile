@@ -29,13 +29,14 @@ RUN apk add --no-cache dumb-init
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install dependencies (without running postinstall hook)
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy built app from builder
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && \
