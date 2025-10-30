@@ -1,0 +1,351 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id                String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  first_name        String        @db.VarChar(100)
+  last_name         String        @db.VarChar(100)
+  email             String        @unique @db.VarChar(255)
+  phone             String?       @db.VarChar(20)
+  location          String?       @db.VarChar(255)
+  current_title     String?       @db.VarChar(255)
+  years_experience  Int?
+  education_level   String?       @db.VarChar(100)
+  skills            String[]
+  languages         String[]
+  desired_positions String[]
+  desired_sectors   String[]
+  desired_locations String[]
+  min_salary        Int?
+  contract_types    String[]
+  base_cv_url       String?
+  linkedin_url      String?
+  portfolio_url     String?
+  active            Boolean?      @default(true)
+  created_at        DateTime?     @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?     @default(now()) @updatedAt @db.Timestamp(6)
+  ab_tests          ABTest[]
+  analytics         Analytic[]
+  applications      Application[]
+  documents         Document[]
+  system_logs       SystemLog[]
+
+  @@index([active], map: "idx_candidates_active")
+  @@index([email], map: "idx_candidates_email")
+  @@map("candidates")
+}
+
+model Company {
+  id                      String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                    String        @unique(map: "companies_name_unique") @db.VarChar(255)
+  website                 String?
+  sector                  String?       @db.VarChar(255)
+  size                    String?       @db.VarChar(50)
+  location                String?       @db.VarChar(255)
+  description             String?
+  reputation_score        Decimal?      @db.Decimal(3, 2)
+  total_reviews           Int?          @default(0)
+  hr_email                String?       @db.VarChar(255)
+  hr_name                 String?       @db.VarChar(255)
+  linkedin_company_url    String?
+  red_flags               String[]
+  is_verified             Boolean?      @default(false)
+  is_blacklisted          Boolean?      @default(false)
+  blacklist_reason        String?
+  total_job_offers        Int?          @default(0)
+  total_applications_sent Int?          @default(0)
+  total_interviews        Int?          @default(0)
+  total_offers_received   Int?          @default(0)
+  success_rate            Decimal?      @db.Decimal(5, 2)
+  created_at              DateTime?     @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?     @default(now()) @updatedAt @db.Timestamp(6)
+  applications            Application[]
+  job_offers              JobOffer[]
+
+  @@index([is_blacklisted], map: "idx_companies_blacklisted")
+  @@index([name], map: "idx_companies_name")
+  @@index([is_verified], map: "idx_companies_verified")
+  @@map("companies")
+}
+
+model JobOffer {
+  id                     String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  company_id             String?           @db.Uuid
+  title                  String            @db.VarChar(255)
+  description            String?
+  location               String?           @db.VarChar(255)
+  contract_type          String?           @db.VarChar(50)
+  required_skills        String[]
+  required_experience    String?           @db.VarChar(100)
+  education_required     String?           @db.VarChar(100)
+  languages_required     String[]
+  salary_min             Int?
+  salary_max             Int?
+  salary_disclosed       Boolean?          @default(false)
+  source_platform        String            @db.VarChar(100)
+  source_url             String            @unique
+  external_id            String?           @db.VarChar(255)
+  posted_date            DateTime?         @db.Timestamp(6)
+  deadline_date          DateTime?         @db.Timestamp(6)
+  scraped_at             DateTime?         @default(now()) @db.Timestamp(6)
+  match_score            Decimal?          @db.Decimal(5, 2)
+  urgency_score          Decimal?          @db.Decimal(5, 2)
+  quality_score          Decimal?          @db.Decimal(5, 2)
+  predicted_success_rate Decimal?          @db.Decimal(5, 2)
+  recruiter_name         String?           @db.VarChar(255)
+  recruiter_email        String?           @db.VarChar(255)
+  recruiter_linkedin     String?
+  status                 String?           @default("collected") @db.VarChar(50)
+  is_duplicate           Boolean?          @default(false)
+  duplicate_of           String?           @db.Uuid
+  is_fraud               Boolean?          @default(false)
+  fraud_reason           String?
+  created_at             DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?         @default(now()) @updatedAt @db.Timestamp(6)
+  applications           Application[]
+  documents              Document[]
+  company                Company?          @relation(fields: [company_id], references: [id], onUpdate: NoAction)
+  job_offers             JobOffer?         @relation("job_offersTojob_offers", fields: [duplicate_of], references: [id], onUpdate: NoAction)
+  other_job_offers       JobOffer[]        @relation("job_offersTojob_offers")
+  social_media_posts     SocialMediaPost[]
+  system_logs            SystemLog[]
+
+  @@index([company_id], map: "idx_job_offers_company")
+  @@index([is_duplicate], map: "idx_job_offers_duplicate")
+  @@index([match_score(sort: Desc)], map: "idx_job_offers_match_score")
+  @@index([posted_date(sort: Desc)], map: "idx_job_offers_posted")
+  @@index([source_platform], map: "idx_job_offers_source")
+  @@index([status], map: "idx_job_offers_status")
+  @@map("job_offers")
+}
+
+model Application {
+  id                  String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  candidate_id        String?     @db.Uuid
+  job_offer_id        String?     @db.Uuid
+  company_id          String?     @db.Uuid
+  cv_version          String?     @db.VarChar(50)
+  cv_url              String
+  cover_letter_url    String?
+  email_subject       String?     @db.VarChar(255)
+  email_body          String?
+  sent_to_email       String?     @db.VarChar(255)
+  sent_at             DateTime?   @default(now()) @db.Timestamp(6)
+  optimal_time        Boolean?    @default(false)
+  status              String?     @default("sent") @db.VarChar(50)
+  last_status_update  DateTime?   @default(now()) @db.Timestamp(6)
+  response_received   Boolean?    @default(false)
+  response_date       DateTime?   @db.Timestamp(6)
+  response_sentiment  String?     @db.VarChar(50)
+  follow_up_count     Int?        @default(0)
+  last_follow_up_date DateTime?   @db.Timestamp(6)
+  next_follow_up_date DateTime?   @db.Timestamp(6)
+  interview_scheduled Boolean?    @default(false)
+  interview_date      DateTime?   @db.Timestamp(6)
+  interview_location  String?     @db.VarChar(255)
+  interview_type      String?     @db.VarChar(50)
+  interview_completed Boolean?    @default(false)
+  outcome             String?     @db.VarChar(50)
+  outcome_date        DateTime?   @db.Timestamp(6)
+  feedback_received   String?
+  created_at          DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?   @default(now()) @updatedAt @db.Timestamp(6)
+  candidate           Candidate?  @relation(fields: [candidate_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  company             Company?    @relation(fields: [company_id], references: [id], onUpdate: NoAction)
+  job_offer           JobOffer?   @relation(fields: [job_offer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  documents           Document[]
+  emails              Email[]
+  system_logs         SystemLog[]
+
+  @@unique([candidate_id, job_offer_id])
+  @@index([candidate_id], map: "idx_applications_candidate")
+  @@index([job_offer_id], map: "idx_applications_job_offer")
+  @@index([next_follow_up_date], map: "idx_applications_next_followup")
+  @@index([sent_at(sort: Desc)], map: "idx_applications_sent_at")
+  @@index([status], map: "idx_applications_status")
+  @@map("applications")
+}
+
+model Document {
+  id              String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  candidate_id    String?      @db.Uuid
+  job_offer_id    String?      @db.Uuid
+  application_id  String?      @db.Uuid
+  type            String       @db.VarChar(50)
+  version         String?      @db.VarChar(50)
+  content         String?
+  file_url        String?
+  file_path       String?
+  keywords_used   String[]
+  template_used   String?      @db.VarChar(100)
+  ai_model_used   String?      @db.VarChar(50)
+  times_sent      Int?         @default(0)
+  times_opened    Int?         @default(0)
+  times_replied   Int?         @default(0)
+  conversion_rate Decimal?     @db.Decimal(5, 2)
+  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  application     Application? @relation(fields: [application_id], references: [id], onUpdate: NoAction)
+  candidate       Candidate?   @relation(fields: [candidate_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  job_offer       JobOffer?    @relation(fields: [job_offer_id], references: [id], onUpdate: NoAction)
+
+  @@index([candidate_id], map: "idx_documents_candidate")
+  @@index([job_offer_id], map: "idx_documents_job_offer")
+  @@index([type], map: "idx_documents_type")
+  @@map("documents")
+}
+
+model Email {
+  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  application_id String?      @db.Uuid
+  direction      String       @db.VarChar(10)
+  subject        String?      @db.VarChar(255)
+  body           String?
+  from_email     String?      @db.VarChar(255)
+  to_email       String?      @db.VarChar(255)
+  sent_at        DateTime?    @db.Timestamp(6)
+  opened         Boolean?     @default(false)
+  opened_at      DateTime?    @db.Timestamp(6)
+  clicked        Boolean?     @default(false)
+  clicked_at     DateTime?    @db.Timestamp(6)
+  sentiment      String?      @db.VarChar(50)
+  intent         String?      @db.VarChar(100)
+  extracted_info Json?
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  application    Application? @relation(fields: [application_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([application_id], map: "idx_emails_application")
+  @@index([direction], map: "idx_emails_direction")
+  @@index([sent_at(sort: Desc)], map: "idx_emails_sent_at")
+  @@map("emails")
+}
+
+model Analytic {
+  id                       String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  candidate_id             String?    @db.Uuid
+  period_start             DateTime   @db.Date
+  period_end               DateTime   @db.Date
+  period_type              String?    @db.VarChar(20)
+  jobs_collected           Int?       @default(0)
+  jobs_qualified           Int?       @default(0)
+  qualification_rate       Decimal?   @db.Decimal(5, 2)
+  applications_sent        Int?       @default(0)
+  applications_opened      Int?       @default(0)
+  open_rate                Decimal?   @db.Decimal(5, 2)
+  responses_received       Int?       @default(0)
+  response_rate            Decimal?   @db.Decimal(5, 2)
+  avg_response_time_hours  Decimal?   @db.Decimal(8, 2)
+  interviews_scheduled     Int?       @default(0)
+  interview_rate           Decimal?   @db.Decimal(5, 2)
+  interviews_completed     Int?       @default(0)
+  offers_received          Int?       @default(0)
+  offer_rate               Decimal?   @db.Decimal(5, 2)
+  offers_accepted          Int?       @default(0)
+  best_platform            String?    @db.VarChar(100)
+  best_sector              String?    @db.VarChar(100)
+  best_company_size        String?    @db.VarChar(50)
+  cv_version_a_performance Decimal?   @db.Decimal(5, 2)
+  cv_version_b_performance Decimal?   @db.Decimal(5, 2)
+  winning_cv_version       String?    @db.VarChar(10)
+  created_at               DateTime?  @default(now()) @db.Timestamp(6)
+  candidate                Candidate? @relation(fields: [candidate_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([candidate_id], map: "idx_analytics_candidate")
+  @@index([period_start, period_end], map: "idx_analytics_period")
+  @@map("analytics")
+}
+
+model ABTest {
+  id                   String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  candidate_id         String?    @db.Uuid
+  test_name            String     @db.VarChar(255)
+  test_type            String?    @db.VarChar(50)
+  variant_a            String?
+  variant_b            String?
+  variant_a_sent       Int?       @default(0)
+  variant_a_opened     Int?       @default(0)
+  variant_a_replied    Int?       @default(0)
+  variant_a_interviews Int?       @default(0)
+  variant_b_sent       Int?       @default(0)
+  variant_b_opened     Int?       @default(0)
+  variant_b_replied    Int?       @default(0)
+  variant_b_interviews Int?       @default(0)
+  winning_variant      String?    @db.VarChar(1)
+  confidence_level     Decimal?   @db.Decimal(5, 2)
+  status               String?    @default("running") @db.VarChar(50)
+  started_at           DateTime?  @default(now()) @db.Timestamp(6)
+  completed_at         DateTime?  @db.Timestamp(6)
+  created_at           DateTime?  @default(now()) @db.Timestamp(6)
+  candidate            Candidate? @relation(fields: [candidate_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([candidate_id], map: "idx_ab_tests_candidate")
+  @@index([status], map: "idx_ab_tests_status")
+  @@map("ab_tests")
+}
+
+model SystemLog {
+  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  log_level      String?      @db.VarChar(20)
+  workflow_name  String?      @db.VarChar(255)
+  node_name      String?      @db.VarChar(255)
+  message        String?
+  error_details  String?
+  candidate_id   String?      @db.Uuid
+  job_offer_id   String?      @db.Uuid
+  application_id String?      @db.Uuid
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  application    Application? @relation(fields: [application_id], references: [id], onUpdate: NoAction)
+  candidate      Candidate?   @relation(fields: [candidate_id], references: [id], onUpdate: NoAction)
+  job_offer      JobOffer?    @relation(fields: [job_offer_id], references: [id], onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_system_logs_created")
+  @@index([log_level], map: "idx_system_logs_level")
+  @@index([workflow_name], map: "idx_system_logs_workflow")
+  @@map("system_logs")
+}
+
+model SocialMediaPost {
+  id                   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  platform             String    @db.VarChar(50)
+  post_url             String    @unique
+  post_id              String?   @db.VarChar(255)
+  post_text            String?
+  posted_by            String?   @db.VarChar(255)
+  posted_by_url        String?
+  posted_at            DateTime? @db.Timestamp(6)
+  is_job_offer         Boolean?  @default(false)
+  job_title            String?   @db.VarChar(255)
+  company_name         String?   @db.VarChar(255)
+  contact_info         String?
+  matched_job_offer_id String?   @db.Uuid
+  scraped_at           DateTime? @default(now()) @db.Timestamp(6)
+  created_at           DateTime? @default(now()) @db.Timestamp(6)
+  matched_job_offer    JobOffer? @relation(fields: [matched_job_offer_id], references: [id], onUpdate: NoAction)
+
+  @@index([is_job_offer], map: "idx_social_posts_is_job")
+  @@index([platform], map: "idx_social_posts_platform")
+  @@index([posted_at(sort: Desc)], map: "idx_social_posts_posted_at")
+  @@map("social_media_posts")
+}
+
+model EmailQuota {
+  date           DateTime  @id @db.Date
+  daily_limit    Int       @default(10)
+  emails_sent    Int?      @default(0)
+  emails_failed  Int?      @default(0)
+  emails_bounced Int?      @default(0)
+  warmup_day     Int?      @default(1)
+  status         String?   @default("active") @db.VarChar(20)
+  notes          String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([date], map: "idx_email_quota_date")
+  @@index([status], map: "idx_email_quota_status")
+  @@map("email_quota")
+}
