@@ -122,57 +122,155 @@ export default function StartPage() {
         </div>
       </section>
 
-      {/* How It Works - Simple 3-Step Process */}
+      {/* How It Works - Workflow Animation */}
       <section id="how-it-works" className="py-20 px-6 bg-slate-800/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-20">
             <h2 className="text-4xl font-bold mb-4">3 étapes, 3 minutes</h2>
             <p className="text-xl text-slate-300">Prêt à envoyer tes premières 50 candidatures?</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: 1,
-                title: 'Crée ton profil',
-                desc: 'Réponds à 5 questions sur tes compétences, tes préférences de job, et ton secteur.',
-                time: '3 min',
-              },
-              {
-                step: 2,
-                title: 'Génère des CVs',
-                desc: 'Notre IA adapte ton CV pour chaque offre d\'emploi automatiquement. Zero effort.',
-                time: 'Instant',
-              },
-              {
-                step: 3,
-                title: 'Candidatures auto',
-                desc: 'Envoie jusqu\'à 50+ candidatures/mois en 1 clic. Suivi en temps réel de tes réponses.',
-                time: 'Auto',
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="relative"
-              >
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-cyan-500/50 transition h-full">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                      {item.step}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-1">{item.title}</h3>
-                      <div className="text-xs text-cyan-400 font-semibold">{item.time}</div>
-                    </div>
+          {/* Workflow Timeline */}
+          <div className="relative">
+            {/* Desktop Connector Line */}
+            <div className="hidden md:block absolute top-20 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-cyan-500 to-transparent"></div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  step: 1,
+                  title: 'Crée ton profil',
+                  desc: 'Réponds à 5 questions sur tes compétences, tes préférences de job, et ton secteur.',
+                  time: '3 min',
+                  icon: '📝',
+                  color: 'blue',
+                },
+                {
+                  step: 2,
+                  title: 'Génère des CVs',
+                  desc: 'Notre IA adapte ton CV pour chaque offre d\'emploi automatiquement. Zero effort.',
+                  time: 'Instant',
+                  icon: '🤖',
+                  color: 'cyan',
+                },
+                {
+                  step: 3,
+                  title: 'Candidatures auto',
+                  desc: 'Envoie jusqu\'à 50+ candidatures/mois en 1 clic. Suivi en temps réel de tes réponses.',
+                  time: 'Auto',
+                  icon: '✈️',
+                  color: 'purple',
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: i * 0.2 }}
+                  className="relative"
+                >
+                  {/* Step Container */}
+                  <div className="flex flex-col items-center">
+                    {/* Animated Step Badge */}
+                    <motion.div
+                      animate={{
+                        boxShadow: [
+                          '0 0 0 0 rgba(6, 182, 212, 0.7)',
+                          '0 0 0 20px rgba(6, 182, 212, 0)',
+                        ],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: i * 0.3,
+                      }}
+                      className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold mb-6 relative z-10 ${
+                        item.color === 'blue'
+                          ? 'bg-gradient-to-br from-blue-600 to-blue-700'
+                          : item.color === 'cyan'
+                            ? 'bg-gradient-to-br from-cyan-600 to-cyan-700'
+                            : 'bg-gradient-to-br from-purple-600 to-purple-700'
+                      }`}
+                    >
+                      {item.icon}
+                    </motion.div>
+
+                    {/* Time Badge */}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      transition={{ duration: 0.4, delay: i * 0.2 + 0.2 }}
+                      className="text-xs font-bold px-3 py-1 rounded-full bg-slate-700 text-cyan-400 mb-4"
+                    >
+                      {item.time}
+                    </motion.div>
+
+                    {/* Card Content */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: i * 0.2 + 0.1 }}
+                      className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 w-full hover:border-cyan-500/50 transition"
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-white font-bold flex-shrink-0">
+                          {item.step}
+                        </div>
+                        <h3 className="text-lg font-semibold flex-1">{item.title}</h3>
+                      </div>
+                      <p className="text-slate-300 text-sm leading-relaxed">{item.desc}</p>
+
+                      {/* Animated Progress Bar */}
+                      <motion.div
+                        initial={{ width: '0%' }}
+                        whileInView={{ width: '100%' }}
+                        transition={{ duration: 1.5, delay: i * 0.2 + 0.3 }}
+                        className={`h-1 rounded-full mt-4 ${
+                          item.color === 'blue'
+                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                            : item.color === 'cyan'
+                              ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                              : 'bg-gradient-to-r from-purple-500 to-cyan-500'
+                        }`}
+                      ></motion.div>
+                    </motion.div>
                   </div>
-                  <p className="text-slate-300 leading-relaxed">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Arrow Connector - Hidden on Mobile */}
+                  {i < 2 && (
+                    <div className="hidden md:flex absolute top-20 -right-4 translate-x-1/2 translate-y-1/2">
+                      <motion.div
+                        animate={{ x: [0, 8, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+                        className="text-cyan-500 text-2xl"
+                      >
+                        →
+                      </motion.div>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Mobile Vertical Connector */}
+            <div className="md:hidden absolute left-8 top-24 bottom-0 w-1 bg-gradient-to-b from-blue-600 via-cyan-500 to-transparent"></div>
           </div>
+
+          {/* CTA Under Timeline */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-center mt-16"
+          >
+            <Link
+              href="/onboarding"
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center gap-2 group"
+            >
+              Commencer maintenant
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 
