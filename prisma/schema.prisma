@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Candidate {
-  id                String        @id @default(cuid()) 
+  id                String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   first_name        String        @db.VarChar(100)
   last_name         String        @db.VarChar(100)
   email             String        @unique @db.VarChar(255)
@@ -42,7 +42,7 @@ model Candidate {
 }
 
 model Company {
-  id                      String        @id @default(cuid()) 
+  id                      String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   name                    String        @unique(map: "companies_name_unique") @db.VarChar(255)
   website                 String?
   sector                  String?       @db.VarChar(255)
@@ -75,7 +75,7 @@ model Company {
 }
 
 model JobOffer {
-  id                     String            @id @default(cuid()) 
+  id                     String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   company_id             String?           
   title                  String            @db.VarChar(255)
   description            String?
@@ -126,7 +126,7 @@ model JobOffer {
 }
 
 model Application {
-  id                  String      @id @default(cuid()) 
+  id                  String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   candidate_id        String?     
   job_offer_id        String?     
   company_id          String?     
@@ -173,7 +173,7 @@ model Application {
 }
 
 model Document {
-  id              String       @id @default(cuid()) 
+  id              String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   candidate_id    String?      
   job_offer_id    String?      
   application_id  String?      
@@ -201,7 +201,7 @@ model Document {
 }
 
 model Email {
-  id             String       @id @default(cuid()) 
+  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   application_id String?      
   direction      String       @db.VarChar(10)
   subject        String?      @db.VarChar(255)
@@ -226,7 +226,7 @@ model Email {
 }
 
 model Analytic {
-  id                       String     @id @default(cuid()) 
+  id                       String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   candidate_id             String?    
   period_start             DateTime   @db.Date
   period_end               DateTime   @db.Date
@@ -261,7 +261,7 @@ model Analytic {
 }
 
 model ABTest {
-  id                   String     @id @default(cuid()) 
+  id                   String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   candidate_id         String?    
   test_name            String     @db.VarChar(255)
   test_type            String?    @db.VarChar(50)
@@ -289,7 +289,7 @@ model ABTest {
 }
 
 model SystemLog {
-  id             String       @id @default(cuid()) 
+  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   log_level      String?      @db.VarChar(20)
   workflow_name  String?      @db.VarChar(255)
   node_name      String?      @db.VarChar(255)
@@ -310,7 +310,7 @@ model SystemLog {
 }
 
 model SocialMediaPost {
-  id                   String    @id @default(cuid()) 
+  id                   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   platform             String    @db.VarChar(50)
   post_url             String    @unique
   post_id              String?   @db.VarChar(255)
