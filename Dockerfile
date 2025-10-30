@@ -6,14 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (skip postinstall, we'll generate Prisma manually)
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .
 
 # Generate Prisma Client
-RUN npm run postinstall
+RUN npx prisma generate
 
 # Build Next.js
 RUN npm run build
