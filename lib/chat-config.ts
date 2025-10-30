@@ -160,10 +160,11 @@ export const CHAT_FLOW: ChatQuestion[] = [
     fieldName: 'min_salary',
     type: 'number',
     placeholder: 'Ex: 500000',
-    validation: (value: string) => {
+    validation: (value: string | string[]) => {
       // Optionnel - accepter vide
-      if (!value || value.trim() === '') return true;
-      const num = parseInt(value);
+      const strValue = Array.isArray(value) ? value[0] : value;
+      if (!strValue || strValue.trim() === '') return true;
+      const num = parseInt(strValue);
       return !isNaN(num) && num >= 0;
     },
     tip: 'Appuie sur Entrée pour passer si pas de préférence',

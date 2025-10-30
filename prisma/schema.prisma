@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Candidate {
-  id                String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                String        @id @default(cuid()) 
   first_name        String        @db.VarChar(100)
   last_name         String        @db.VarChar(100)
   email             String        @unique @db.VarChar(255)
@@ -42,7 +42,7 @@ model Candidate {
 }
 
 model Company {
-  id                      String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                      String        @id @default(cuid()) 
   name                    String        @unique(map: "companies_name_unique") @db.VarChar(255)
   website                 String?
   sector                  String?       @db.VarChar(255)
@@ -75,8 +75,8 @@ model Company {
 }
 
 model JobOffer {
-  id                     String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  company_id             String?           @db.Uuid
+  id                     String            @id @default(cuid()) 
+  company_id             String?           
   title                  String            @db.VarChar(255)
   description            String?
   location               String?           @db.VarChar(255)
@@ -103,7 +103,7 @@ model JobOffer {
   recruiter_linkedin     String?
   status                 String?           @default("collected") @db.VarChar(50)
   is_duplicate           Boolean?          @default(false)
-  duplicate_of           String?           @db.Uuid
+  duplicate_of           String?           
   is_fraud               Boolean?          @default(false)
   fraud_reason           String?
   created_at             DateTime?         @default(now()) @db.Timestamp(6)
@@ -126,10 +126,10 @@ model JobOffer {
 }
 
 model Application {
-  id                  String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  candidate_id        String?     @db.Uuid
-  job_offer_id        String?     @db.Uuid
-  company_id          String?     @db.Uuid
+  id                  String      @id @default(cuid()) 
+  candidate_id        String?     
+  job_offer_id        String?     
+  company_id          String?     
   cv_version          String?     @db.VarChar(50)
   cv_url              String
   cover_letter_url    String?
@@ -173,10 +173,10 @@ model Application {
 }
 
 model Document {
-  id              String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  candidate_id    String?      @db.Uuid
-  job_offer_id    String?      @db.Uuid
-  application_id  String?      @db.Uuid
+  id              String       @id @default(cuid()) 
+  candidate_id    String?      
+  job_offer_id    String?      
+  application_id  String?      
   type            String       @db.VarChar(50)
   version         String?      @db.VarChar(50)
   content         String?
@@ -201,8 +201,8 @@ model Document {
 }
 
 model Email {
-  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  application_id String?      @db.Uuid
+  id             String       @id @default(cuid()) 
+  application_id String?      
   direction      String       @db.VarChar(10)
   subject        String?      @db.VarChar(255)
   body           String?
@@ -226,8 +226,8 @@ model Email {
 }
 
 model Analytic {
-  id                       String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  candidate_id             String?    @db.Uuid
+  id                       String     @id @default(cuid()) 
+  candidate_id             String?    
   period_start             DateTime   @db.Date
   period_end               DateTime   @db.Date
   period_type              String?    @db.VarChar(20)
@@ -261,8 +261,8 @@ model Analytic {
 }
 
 model ABTest {
-  id                   String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  candidate_id         String?    @db.Uuid
+  id                   String     @id @default(cuid()) 
+  candidate_id         String?    
   test_name            String     @db.VarChar(255)
   test_type            String?    @db.VarChar(50)
   variant_a            String?
@@ -289,15 +289,15 @@ model ABTest {
 }
 
 model SystemLog {
-  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id             String       @id @default(cuid()) 
   log_level      String?      @db.VarChar(20)
   workflow_name  String?      @db.VarChar(255)
   node_name      String?      @db.VarChar(255)
   message        String?
   error_details  String?
-  candidate_id   String?      @db.Uuid
-  job_offer_id   String?      @db.Uuid
-  application_id String?      @db.Uuid
+  candidate_id   String?      
+  job_offer_id   String?      
+  application_id String?      
   created_at     DateTime?    @default(now()) @db.Timestamp(6)
   application    Application? @relation(fields: [application_id], references: [id], onUpdate: NoAction)
   candidate      Candidate?   @relation(fields: [candidate_id], references: [id], onUpdate: NoAction)
@@ -310,7 +310,7 @@ model SystemLog {
 }
 
 model SocialMediaPost {
-  id                   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                   String    @id @default(cuid()) 
   platform             String    @db.VarChar(50)
   post_url             String    @unique
   post_id              String?   @db.VarChar(255)
@@ -322,7 +322,7 @@ model SocialMediaPost {
   job_title            String?   @db.VarChar(255)
   company_name         String?   @db.VarChar(255)
   contact_info         String?
-  matched_job_offer_id String?   @db.Uuid
+  matched_job_offer_id String?   
   scraped_at           DateTime? @default(now()) @db.Timestamp(6)
   created_at           DateTime? @default(now()) @db.Timestamp(6)
   matched_job_offer    JobOffer? @relation(fields: [matched_job_offer_id], references: [id], onUpdate: NoAction)

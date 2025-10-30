@@ -31,45 +31,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Store CV in database
-    const cv = await prisma.generatedCV.upsert({
-      where: {
-        profileId_jobId: {
-          profileId: body.profileId,
-          jobId: body.jobId || null,
-        },
-      },
-      update: {
-        cvContent: body.cvContent,
-        cvFormat: body.cvFormat,
-        compatibilityScore: body.compatibilityScore,
-        status: 'completed',
-        workflowId: body.workflowId || null,
-        errorMessage: null,
-      },
-      create: {
-        profileId: body.profileId,
-        jobId: body.jobId || null,
-        cvContent: body.cvContent,
-        cvFormat: body.cvFormat,
-        compatibilityScore: body.compatibilityScore,
-        status: 'completed',
-        workflowId: body.workflowId || null,
+    // Store CV in database as a Document
+    const cv = await prisma.document.create({
+      data: {
+        candidate_id: body.profileId,
+        type: 'cv',
+        version: body.cvFormat || 'pdf',
+        content: body.cvContent || '',
+        template_used: body.cvFormat,
       },
     });
 
-    // Log audit trail
-    await prisma.auditLog.create({
-      data: {
-        profileId: body.profileId,
-        action: 'cv_generated',
-        details: {
-          jobId: body.jobId,
-          format: body.cvFormat,
-          score: body.compatibilityScore,
-        },
-      },
-    });
+    // TODO: Log CV generation (SystemLog schema needs to be updated)
 
     console.log('[CV Webhook] CV generated and stored:', body.profileId);
     console.log('[CV Webhook] CV Format:', body.cvFormat);
@@ -113,10 +86,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const cv = await prisma.generatedCV.findFirst({
+    const cv = await prisma.document.findFirst({
       where: {
-        profileId,
-        jobId: jobId || null,
+        candidate_id: profileId,
+        type: 'cv',
       },
     });
 

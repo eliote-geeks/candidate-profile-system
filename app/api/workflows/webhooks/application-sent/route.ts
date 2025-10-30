@@ -33,44 +33,40 @@ export async function POST(req: NextRequest) {
     }
 
     // Store application in database
-    const application = await prisma.application.upsert({
+    // First, try to find existing application
+    const existingApplication = await prisma.application.findFirst({
       where: {
-        profileId_jobId: {
-          profileId: body.profileId,
-          jobId: body.jobId,
-        },
-      },
-      update: {
-        status: body.status,
-        sentAt: body.status === 'sent' ? new Date() : undefined,
-        confirmationUrl: body.confirmationUrl,
-        recipientEmail: body.recipientEmail,
-        errorMessage: body.errorMessage || null,
-      },
-      create: {
-        profileId: body.profileId,
-        jobId: body.jobId,
-        status: body.status,
-        sentAt: body.status === 'sent' ? new Date() : undefined,
-        confirmationUrl: body.confirmationUrl,
-        recipientEmail: body.recipientEmail,
-        errorMessage: body.errorMessage || null,
+        candidate_id: body.profileId,
+        job_offer_id: body.jobId,
       },
     });
 
-    // Log audit trail
-    await prisma.auditLog.create({
-      data: {
-        profileId: body.profileId,
-        action: 'application_sent',
-        details: {
-          jobId: body.jobId,
-          applicationId: body.applicationId,
+    let application;
+    if (existingApplication) {
+      // Update existing application
+      application = await prisma.application.update({
+        where: { id: existingApplication.id },
+        data: {
           status: body.status,
-          recipientEmail: body.recipientEmail,
+          sent_at: body.status === 'sent' ? new Date() : undefined,
+          last_status_update: new Date(),
         },
-      },
-    });
+      });
+    } else {
+      // Create new application
+      application = await prisma.application.create({
+        data: {
+          candidate_id: body.profileId,
+          job_offer_id: body.jobId,
+          status: body.status,
+          sent_at: body.status === 'sent' ? new Date() : undefined,
+          cv_url: '',
+          sent_to_email: body.recipientEmail || '',
+        },
+      });
+    }
+
+    // TODO: Log audit trail (AuditLog model needs to be created)
 
     console.log('[Application Webhook] Application received:', `${body.profileId}_${body.jobId}`);
     console.log('[Application Webhook] Status:', body.status);
@@ -118,12 +114,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const application = await prisma.application.findUnique({
+    const application = await prisma.application.findFirst({
       where: {
-        profileId_jobId: {
-          profileId,
-          jobId,
-        },
+        candidate_id: profileId,
+        job_offer_id: jobId,
       },
     });
 

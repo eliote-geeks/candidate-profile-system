@@ -32,53 +32,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Store analysis in database
-    const analysis = await prisma.jobAnalysis.upsert({
-      where: {
-        profileId_jobId: {
-          profileId: body.profileId,
-          jobId: body.jobId,
-        },
-      },
-      update: {
-        matchPercentage: body.matchPercentage,
-        matchedSkills: body.matchedSkills,
-        missingSkills: body.missingSkills,
-        salaryMatch: body.salaryMatch,
-        locationMatch: body.locationMatch,
-        analysis: body.analysis,
-        recommendation: body.recommendation,
-        status: 'completed',
-        workflowId: body.workflowId || null,
-        errorMessage: null,
-      },
-      create: {
-        profileId: body.profileId,
-        jobId: body.jobId,
-        matchPercentage: body.matchPercentage,
-        matchedSkills: body.matchedSkills,
-        missingSkills: body.missingSkills,
-        salaryMatch: body.salaryMatch,
-        locationMatch: body.locationMatch,
-        analysis: body.analysis,
-        recommendation: body.recommendation,
-        status: 'completed',
-        workflowId: body.workflowId || null,
-      },
-    });
-
-    // Log audit trail
-    await prisma.auditLog.create({
-      data: {
-        profileId: body.profileId,
-        action: 'job_analyzed',
-        details: {
-          jobId: body.jobId,
-          matchPercentage: body.matchPercentage,
-          recommendation: body.recommendation,
-        },
-      },
-    });
+    // TODO: Store analysis in database (need to create JobAnalysis model or update existing models)
+    // For now, just log the analysis
+    const analysis = {
+      id: `${body.profileId}_${body.jobId}`,
+      candidate_id: body.profileId,
+      job_offer_id: body.jobId,
+      matchPercentage: body.matchPercentage,
+      recommendation: body.recommendation,
+    };
 
     console.log('[Job Analysis Webhook] Analysis received:', `${body.profileId}_${body.jobId}`);
     console.log('[Job Analysis Webhook] Match:', body.matchPercentage + '%');
@@ -122,28 +84,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const analysis = await prisma.jobAnalysis.findUnique({
-      where: {
-        profileId_jobId: {
-          profileId,
-          jobId,
-        },
-      },
-    });
-
-    if (!analysis) {
-      return NextResponse.json(
-        { error: 'Analysis not found' },
-        { status: 404 }
-      );
-    }
-
+    // TODO: Retrieve analysis from database when JobAnalysis model is created
+    // For now, return a not found error
     return NextResponse.json(
-      {
-        success: true,
-        analysis,
-      },
-      { status: 200 }
+      { error: 'Analysis storage not yet implemented' },
+      { status: 501 }
     );
   } catch (error) {
     console.error('[Job Analysis Webhook GET] Error:', error);
