@@ -1,0 +1,64 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🚀 Starting deployment..."
+
+            # Navigate to the project directory
+            cd /home/paul/candidate-profile-system
+
+            # Pull latest changes
+            echo "📥 Pulling latest code from GitHub..."
+            git pull origin main
+
+            # Navigate to docker-compose directory
+            cd /home/paul/n8n-installation
+
+            # Stop the existing Next.js container
+            echo "🛑 Stopping recruit-app container..."
+            docker-compose -f docker-compose.recruit.yml stop recruit-app
+
+            # Rebuild the image
+            echo "🔨 Building Docker image..."
+            docker-compose -f docker-compose.recruit.yml build --no-cache nextjs-app
+
+            # Start all services
+            echo "🚀 Starting services..."
+            docker-compose -f docker-compose.recruit.yml up -d
+
+            # Wait for the app to be ready
+            echo "⏳ Waiting for application to start..."
+            sleep 5
+
+            # Check if the app is running
+            echo "✅ Checking application status..."
+            docker-compose -f docker-compose.recruit.yml ps recruit-app
+
+            echo "✨ Deployment complete!"
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Deployment succeeded!"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi
