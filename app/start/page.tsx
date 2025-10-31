@@ -258,14 +258,22 @@ export default function StartPage() {
             </a>
           </div>
 
-          {/* CTA Button */}
-          <Link
-            href="/onboarding"
-            className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-sm hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center gap-2"
-          >
-            Commencer
-            <ArrowRight size={16} />
-          </Link>
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/login"
+              className="px-4 py-2 text-slate-300 hover:text-cyan-400 font-semibold text-sm transition border border-slate-600 hover:border-cyan-400 rounded-lg"
+            >
+              Se connecter
+            </Link>
+            <Link
+              href="/register"
+              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-sm hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center gap-2"
+            >
+              S'inscrire
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -337,13 +345,22 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="flex flex-col gap-3 text-left"
             >
-              <Link
-                href="/onboarding"
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group w-fit"
-              >
-                Commencer maintenant (gratuit)
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/register"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group"
+                >
+                  S'inscrire gratuitement
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
+                </Link>
+
+                <Link
+                  href="/login"
+                  className="px-8 py-4 bg-slate-800/50 border-2 border-slate-600 rounded-lg text-white font-semibold text-lg hover:border-cyan-500 hover:bg-slate-800 transition inline-flex items-center justify-center gap-2 group"
+                >
+                  Se connecter
+                </Link>
+              </div>
 
               {/* Social Proof */}
               <p className="text-slate-400 text-sm">
