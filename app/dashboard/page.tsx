@@ -78,7 +78,7 @@ const itemVariants = {
   },
 };
 
-const cardVariants = {
+const cardVariants: any = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
