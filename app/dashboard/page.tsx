@@ -146,8 +146,25 @@ export default function Dashboard() {
   };
 
   const handleEditProfile = () => {
-    if (profile?.candidate) {
-      setEditData(profile.candidate);
+    if (profile) {
+      const candidateData = profile.candidate || {
+        id: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        location: '',
+        currentTitle: '',
+        yearsExperience: 0,
+        educationLevel: '',
+        skills: [],
+        languages: [],
+        desiredPositions: [],
+        minSalary: 0,
+        linkedinUrl: '',
+        portfolioUrl: '',
+      };
+      setEditData(candidateData);
       setEditMode(true);
     }
   };
