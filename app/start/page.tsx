@@ -377,8 +377,8 @@ export default function StartPage() {
                 {
                   step: 1,
                   title: 'Crée ton profil',
-                  desc: 'Réponds à 5 questions sur tes compétences, tes préférences de job, et ton secteur.',
-                  time: '3 min',
+                  desc: 'Réponds à quelques questions simples sur tes compétences et préférences. C\'est rapide et facile.',
+                  time: '2 min',
                   icon: '📝',
                   color: 'blue',
                 },
