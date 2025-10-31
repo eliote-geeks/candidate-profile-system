@@ -45,7 +45,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const result = $input.first().json;\n\n// Si l'email n'existe pas ou mot de passe incorrect\nif (!result || !result.id) {\n  return {\n    json: {\n      success: false,\n      error: 'Email ou mot de passe incorrect',\n      respondWithError: true\n    }\n  };\n}\n\n// Vérifier le mot de passe\nif (!result.password_match) {\n  return {\n    json: {\n      success: false,\n      error: 'Email ou mot de passe incorrect',\n      respondWithError: true\n    }\n  };\n}\n\n// Vérifier si compte actif\nif (!result.is_active) {\n  return {\n    json: {\n      success: false,\n      error: 'Ce compte est désactivé',\n      respondWithError: true\n    }\n  };\n}\n\n// Tout OK, retourner les données utilisateur\nreturn {\n  json: {\n    userId: result.id,\n    email: result.email,\n    firstName: result.first_name,\n    lastName: result.last_name,\n    isVerified: result.is_verified,\n    isActive: result.is_active,\n    createdAt: result.created_at,\n    respondWithError: false\n  }\n};"
+        "jsCode": "const result = $input.first().json;\nlet errorMessage = null;\n\n// Si l'email n'existe pas\nif (!result || !result.id) {\n  errorMessage = 'Email ou mot de passe incorrect';\n}\n// Vérifier le mot de passe\nelse if (!result.password_match) {\n  errorMessage = 'Email ou mot de passe incorrect';\n}\n// Vérifier si compte actif\nelse if (!result.is_active) {\n  errorMessage = 'Ce compte est désactivé';\n}\n\n// Si erreur, retourner l'erreur\nif (errorMessage) {\n  return {\n    json: {\n      success: false,\n      error: errorMessage\n    }\n  };\n}\n\n// Tout OK, retourner les données utilisateur\nreturn {\n  json: {\n    userId: result.id,\n    email: result.email,\n    firstName: result.first_name,\n    lastName: result.last_name,\n    isVerified: result.is_verified,\n    isActive: result.is_active,\n    createdAt: result.created_at\n  }\n};"
       },
       "id": "code-verify-credentials",
       "name": "Verify Credentials",
@@ -96,7 +96,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ {\n  \"success\": false,\n  \"error\": $json.error\n} }}",
+        "responseBody": "={{ $json }}",
         "options": {
           "responseCode": 401
         }
@@ -149,7 +149,9 @@
             "node": "Generate Tokens",
             "type": "main",
             "index": 0
-          },
+          }
+        ],
+        [
           {
             "node": "Respond Error",
             "type": "main",
