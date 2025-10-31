@@ -1,0 +1,198 @@
+{
+  "name": "Auth - Login (pgcrypto)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth-login",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-login",
+      "name": "Webhook Login",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "auth-login"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraire les données du body\nconst body = $input.item.json.body;\nconst { email, password } = body;\n\n// Validation des champs requis\nif (!email || !password) {\n  return {\n    json: {\n      success: false,\n      error: 'Email et mot de passe requis'\n    }\n  };\n}\n\n// Normaliser l'email\nreturn {\n  json: {\n    email: email.toLowerCase().trim(),\n    password: password,\n    validationPassed: true\n  }\n};"
+      },
+      "id": "code-validation",
+      "name": "Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id, \n  email, \n  password_hash, \n  first_name, \n  last_name, \n  is_verified, \n  is_active, \n  created_at,\n  (password_hash = crypt('{{ $json.password }}', password_hash)) AS password_match\nFROM users \nWHERE email = '{{ $json.email }}' \nLIMIT 1",
+        "options": {}
+      },
+      "id": "postgres-check-credentials",
+      "name": "Check Credentials",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [680, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Job Automation DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Vérifier le résultat de la requête\nconst result = $input.first().json;\n\nif (!result || !result.id) {\n  return {\n    json: {\n      success: false,\n      error: 'Email ou mot de passe incorrect'\n    }\n  };\n}\n\n// Vérifier si le mot de passe correspond\nif (!result.password_match) {\n  return {\n    json: {\n      success: false,\n      error: 'Email ou mot de passe incorrect'\n    }\n  };\n}\n\n// Vérifier si le compte est actif\nif (!result.is_active) {\n  return {\n    json: {\n      success: false,\n      error: 'Ce compte est désactivé'\n    }\n  };\n}\n\n// Tout est OK, préparer les données utilisateur\nreturn {\n  json: {\n    userId: result.id,\n    email: result.email,\n    firstName: result.first_name,\n    lastName: result.last_name,\n    isVerified: result.is_verified,\n    isActive: result.is_active,\n    createdAt: result.created_at,\n    credentialsValid: true\n  }\n};"
+      },
+      "id": "code-verify-credentials",
+      "name": "Verify Credentials",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fonction pour générer un token aléatoire sans crypto\nfunction generateToken(length) {\n  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\n  let token = '';\n  for (let i = 0; i < length; i++) {\n    token += chars.charAt(Math.floor(Math.random() * chars.length));\n  }\n  return token + Date.now().toString(36);\n}\n\nconst userData = $input.first().json;\n\n// Générer des tokens aléatoires\nconst accessToken = generateToken(32);\nconst refreshToken = generateToken(32);\n\n// Expiration: 15 minutes pour access_token\nconst expiresAt = new Date();\nexpiresAt.setMinutes(expiresAt.getMinutes() + 15);\n\nreturn {\n  json: {\n    userId: userData.userId,\n    accessToken: accessToken,\n    refreshToken: refreshToken,\n    expiresAt: expiresAt.toISOString(),\n    user: {\n      id: userData.userId,\n      email: userData.email,\n      firstName: userData.firstName,\n      lastName: userData.lastName,\n      isVerified: userData.isVerified,\n      isActive: userData.isActive,\n      createdAt: userData.createdAt\n    }\n  }\n};"
+      },
+      "id": "code-generate-tokens",
+      "name": "Generate Tokens",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (user_id, access_token, refresh_token, expires_at, created_at, updated_at)\nVALUES (\n  '{{ $json.userId }}',\n  '{{ $json.accessToken }}',\n  '{{ $json.refreshToken }}',\n  '{{ $json.expiresAt }}',\n  NOW(),\n  NOW()\n)\nRETURNING id",
+        "options": {}
+      },
+      "id": "postgres-insert-session",
+      "name": "Insert Session",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1340, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Job Automation DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"data\": {\n    \"user\": $('Generate Tokens').first().json.user,\n    \"token\": $('Generate Tokens').first().json.accessToken,\n    \"refreshToken\": $('Generate Tokens').first().json.refreshToken,\n    \"expiresAt\": $('Generate Tokens').first().json.expiresAt\n  }\n} }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Login": {
+      "main": [
+        [
+          {
+            "node": "Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation": {
+      "main": [
+        [
+          {
+            "node": "Check Credentials",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Credentials": {
+      "main": [
+        [
+          {
+            "node": "Verify Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Credentials": {
+      "main": [
+        [
+          {
+            "node": "Generate Tokens",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Tokens": {
+      "main": [
+        [
+          {
+            "node": "Insert Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Session": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-31T00:00:00.000Z",
+  "versionId": "2"
+}
