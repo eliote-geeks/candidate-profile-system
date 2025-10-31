@@ -82,6 +82,11 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -137,6 +142,89 @@ export default function Dashboard() {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       router.push('/login');
+    }
+  };
+
+  const handleEditProfile = () => {
+    if (profile?.candidate) {
+      setEditData(profile.candidate);
+      setEditMode(true);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('auth_token');
+
+      const response = await fetch('/api/profiles/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(editData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setProfile((prev) =>
+          prev
+            ? {
+              ...prev,
+              candidate: {
+                ...prev.candidate,
+                ...editData,
+              },
+            }
+            : null
+        );
+        setEditMode(false);
+      } else {
+        alert('Erreur: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+      alert('Erreur lors de la mise à jour');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'SUPPRIMER') {
+      alert('Veuillez taper "SUPPRIMER" pour confirmer');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('auth_token');
+
+      const response = await fetch('/api/profiles/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        router.push('/');
+      } else {
+        alert('Erreur: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression');
+    } finally {
+      setSaving(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -201,15 +289,25 @@ export default function Dashboard() {
             <Sparkles size={28} className="text-cyan-400" />
             RecruitAI
           </motion.div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-slate-300 hover:text-cyan-400 transition px-4 py-2 rounded-lg hover:bg-cyan-500/10"
-          >
-            <LogOut size={18} />
-            Déconnexion
-          </motion.button>
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center gap-2 text-red-300 hover:text-red-200 transition px-4 py-2 rounded-lg hover:bg-red-500/10"
+            >
+              🗑️ Supprimer
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-slate-300 hover:text-cyan-400 transition px-4 py-2 rounded-lg hover:bg-cyan-500/10"
+            >
+              <LogOut size={18} />
+              Déconnexion
+            </motion.button>
+          </div>
         </div>
       </nav>
 
@@ -237,15 +335,25 @@ export default function Dashboard() {
                       <Mail size={18} className="text-cyan-400" /> {user.email}
                     </p>
                   </div>
-                  {user.isVerified && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-500/50 text-green-300 px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2"
+                  <div className="flex items-center gap-3">
+                    {user.isVerified && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-500/50 text-green-300 px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2"
+                      >
+                        <CheckCircle size={16} /> Vérifié
+                      </motion.span>
+                    )}
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleEditProfile}
+                      className="px-4 py-2 backdrop-blur-lg bg-gradient-to-r from-cyan-500/40 to-blue-500/40 border border-cyan-500/50 text-cyan-200 rounded-xl hover:from-cyan-500/60 hover:to-blue-500/60 transition font-semibold"
                     >
-                      <CheckCircle size={16} /> Vérifié
-                    </motion.span>
-                  )}
+                      ✏️ Éditer
+                    </motion.button>
+                  </div>
                 </div>
 
                 {candidate && (
@@ -530,6 +638,139 @@ export default function Dashboard() {
           </motion.div>
         </div>
       </div>
+
+      {/* Edit Modal - 2025 Style */}
+      {editMode && editData && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setEditMode(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-cyan-500/30 rounded-3xl p-10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Éditer votre profil
+            </h2>
+
+            <div className="space-y-6">
+              {[
+                { label: 'Titre actuel', key: 'currentTitle', type: 'text' },
+                { label: 'Localisation', key: 'location', type: 'text' },
+                { label: 'Années d\'expérience', key: 'yearsExperience', type: 'number' },
+                { label: 'Niveau d\'études', key: 'educationLevel', type: 'text' },
+                { label: 'Salaire attendu (€)', key: 'minSalary', type: 'number' },
+                { label: 'URL LinkedIn', key: 'linkedinUrl', type: 'text' },
+                { label: 'URL Portfolio', key: 'portfolioUrl', type: 'text' },
+              ].map((field) => (
+                <div key={field.key}>
+                  <label className="block text-slate-300 text-sm font-semibold mb-2 uppercase tracking-wide">
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type}
+                    value={editData[field.key] || ''}
+                    onChange={(e) =>
+                      setEditData({
+                        ...editData,
+                        [field.key]: field.type === 'number' ? parseInt(e.target.value) || '' : e.target.value,
+                      })
+                    }
+                    className="w-full backdrop-blur-lg bg-slate-800/50 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-4 mt-10">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-xl font-semibold text-white transition disabled:opacity-50"
+              >
+                {saving ? 'Sauvegarde...' : '💾 Sauvegarder'}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setEditMode(false)}
+                className="flex-1 px-6 py-3 backdrop-blur-lg bg-slate-800/50 border border-slate-600/50 rounded-xl font-semibold text-white hover:bg-slate-800 transition"
+              >
+                ❌ Annuler
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Delete Account Modal - 2025 Style */}
+      {showDeleteModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="backdrop-blur-xl bg-gradient-to-br from-red-950/90 to-slate-900/90 border border-red-500/30 rounded-3xl p-10 max-w-md w-full"
+          >
+            <div className="text-center">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h2 className="text-3xl font-bold mb-4 text-red-400">Supprimer le compte</h2>
+              <p className="text-slate-300 mb-6">
+                Cette action est irréversible. Tous vos données seront définitivement supprimées.
+              </p>
+
+              <div className="mb-6">
+                <p className="text-slate-400 text-sm mb-3">
+                  Tapez <span className="font-bold text-red-400">"SUPPRIMER"</span> pour confirmer:
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  placeholder="SUPPRIMER"
+                  className="w-full backdrop-blur-lg bg-slate-800/50 border border-red-500/30 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition text-center font-semibold tracking-wider"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDeleteAccount}
+                  disabled={saving || deleteConfirm !== 'SUPPRIMER'}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 rounded-xl font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? '...' : '🔴 Supprimer'}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteConfirm('');
+                  }}
+                  className="flex-1 px-6 py-3 backdrop-blur-lg bg-slate-800/50 border border-slate-600/50 rounded-xl font-semibold text-white hover:bg-slate-800 transition"
+                >
+                  ❌ Annuler
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
 
       <style jsx>{`
         @keyframes blob {

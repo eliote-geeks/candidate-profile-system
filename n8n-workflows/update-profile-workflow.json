@@ -1,0 +1,251 @@
+{
+  "name": "Update Profile",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "update-profile",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-update-profile",
+      "name": "Webhook Update Profile",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "update-profile"
+    },
+    {
+      "parameters": {
+        "jsCode": "const authHeader = $input.item.json.headers?.authorization || $input.item.json.body?.token;\nconst token = authHeader?.replace('Bearer ', '');\n\nif (!token) {\n  return {\n    json: {\n      success: false,\n      error: 'Token requis',\n      respondWithError: true\n    }\n  };\n}\n\nreturn {\n  json: {\n    token: token,\n    ...Object.keys($input.item.json.body).filter(k => k !== 'token').reduce((acc, k) => ({ ...acc, [k]: $input.item.json.body[k] }), {})\n  }\n};"
+      },
+      "id": "code-extract-token",
+      "name": "Extract Token & Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id FROM sessions WHERE access_token = '{{ $json.token }}' AND expires_at > NOW() LIMIT 1",
+        "options": {}
+      },
+      "id": "postgres-verify-token",
+      "name": "Verify Token",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [680, 300],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n\nif (!result || !result.user_id) {\n  return {\n    json: {\n      success: false,\n      error: 'Token invalide ou expiré',\n      respondWithError: true\n    }\n  };\n}\n\nreturn {\n  json: {\n    userId: result.user_id\n  }\n};"
+      },
+      "id": "code-check-token",
+      "name": "Check Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT email FROM users WHERE id = '{{ $json.userId }}'",
+        "options": {}
+      },
+      "id": "postgres-get-email",
+      "name": "Get User Email",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 300],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const userEmail = $('Get User Email').first().json.email;\nconst data = $('Extract Token & Data').first().json;\n\nconst updateFields = [];\nconst updateValues = [];\nlet paramIndex = 1;\n\nconst fieldMap = {\n  'currentTitle': 'current_title',\n  'location': 'location',\n  'yearsExperience': 'years_experience',\n  'educationLevel': 'education_level',\n  'minSalary': 'min_salary',\n  'linkedinUrl': 'linkedin_url',\n  'portfolioUrl': 'portfolio_url'\n};\n\nObject.keys(data).forEach(key => {\n  if (key !== 'token' && fieldMap[key] && data[key] !== null && data[key] !== undefined && data[key] !== '') {\n    updateFields.push(`${fieldMap[key]} = {{ $json.${key} }}`);\n    updateValues.push(data[key]);\n  }\n});\n\nif (updateFields.length === 0) {\n  return {\n    json: {\n      success: false,\n      error: 'Aucun champ à mettre à jour'\n    }\n  };\n}\n\nreturn {\n  json: {\n    email: userEmail,\n    updateFields: updateFields,\n    updateData: data\n  }\n};"
+      },
+      "id": "code-prepare-update",
+      "name": "Prepare Update Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE candidates SET current_title = COALESCE('{{ $json.currentTitle }}', current_title), location = COALESCE('{{ $json.location }}', location), years_experience = COALESCE('{{ $json.yearsExperience }}', years_experience), education_level = COALESCE('{{ $json.educationLevel }}', education_level), min_salary = COALESCE('{{ $json.minSalary }}', min_salary), linkedin_url = COALESCE('{{ $json.linkedinUrl }}', linkedin_url), portfolio_url = COALESCE('{{ $json.portfolioUrl }}', portfolio_url), updated_at = NOW() WHERE email = '{{ $json.email }}' RETURNING *",
+        "options": {}
+      },
+      "id": "postgres-update-candidate",
+      "name": "Update Candidate",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1560, 300],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n\nif (!result || !result.id) {\n  return {\n    json: {\n      success: false,\n      error: 'Échec de la mise à jour'\n    }\n  };\n}\n\nreturn {\n  json: {\n    id: result.id,\n    firstName: result.first_name,\n    lastName: result.last_name,\n    email: result.email,\n    phone: result.phone,\n    location: result.location,\n    currentTitle: result.current_title,\n    yearsExperience: result.years_experience,\n    educationLevel: result.education_level,\n    skills: result.skills,\n    languages: result.languages,\n    desiredPositions: result.desired_positions,\n    desiredSectors: result.desired_sectors,\n    desiredLocations: result.desired_locations,\n    minSalary: result.min_salary,\n    contractTypes: result.contract_types,\n    cvUrl: result.base_cv_url,\n    linkedinUrl: result.linkedin_url,\n    portfolioUrl: result.portfolio_url,\n    active: result.active\n  }\n};"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"data\": $json\n} }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": false,\n  \"error\": $json.error\n} }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Update Profile": {
+      "main": [
+        [
+          {
+            "node": "Extract Token & Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Token & Data": {
+      "main": [
+        [
+          {
+            "node": "Verify Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Token": {
+      "main": [
+        [
+          {
+            "node": "Check Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Token": {
+      "main": [
+        [
+          {
+            "node": "Get User Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Update Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Update Query": {
+      "main": [
+        [
+          {
+            "node": "Update Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Candidate": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c20750a766bf706ae816bbff3777385b2eef92cf9418f2aea21c75d2277c69c2"
+  }
+}
