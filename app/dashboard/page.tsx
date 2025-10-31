@@ -1,9 +1,33 @@
 'use client';
 
-import { BarChart3, Users, Send, CheckCircle, TrendingUp, AlertCircle } from 'lucide-react';
+import { BarChart3, Users, Send, CheckCircle, TrendingUp, AlertCircle, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      // Supprimer le token du localStorage
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+
+      // Appeler l'API de déconnexion (optionnel si tu crées le workflow)
+      // await fetch('https://reveilart4arist.com/webhook/auth-logout', {
+      //   method: 'POST',
+      //   headers: { 'Authorization': `Bearer ${token}` }
+      // });
+
+      // Rediriger vers la page de login
+      router.push('/login');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion', error);
+      // Rediriger quand même
+      router.push('/login');
+    }
+  };
+
   return (
     <main className="w-full min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
       {/* Navigation */}
@@ -17,7 +41,11 @@ export default function Dashboard() {
             <Link href="/dashboard" className="text-cyan-400">Dashboard</Link>
             <Link href="/settings" className="hover:text-cyan-400 transition">Paramètres</Link>
           </div>
-          <button className="text-slate-400 hover:text-cyan-400 transition">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition"
+          >
+            <LogOut size={18} />
             Déconnexion
           </button>
         </div>

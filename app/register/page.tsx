@@ -53,13 +53,19 @@ export default function RegisterPage() {
 
       const data = await response.json()
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         setError(data.error || 'Erreur lors de l\'inscription')
         return
       }
 
-      // Redirection vers login
-      router.push('/login?registered=true')
+      // Sauvegarder le token et les données utilisateur
+      if (data.data && data.data.token) {
+        localStorage.setItem('auth_token', data.data.token)
+        localStorage.setItem('user', JSON.stringify(data.data.user))
+      }
+
+      // Redirection vers dashboard
+      router.push('/dashboard')
     } catch (err) {
       setError('Une erreur est survenue')
       console.error(err)
