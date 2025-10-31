@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const authHeader = $input.item.json.headers?.authorization || $input.item.json.body?.token;\nconst token = authHeader?.replace('Bearer ', '');\n\nif (!token) {\n  return {\n    json: {\n      success: false,\n      error: 'Token requis'\n    }\n  };\n}\n\nreturn {\n  json: {\n    token: token\n  }\n};"
+        "jsCode": "const authHeader = $input.item.json.headers?.authorization || $input.item.json.body?.token;\nconst token = authHeader?.replace('Bearer ', '');\n\nif (!token) {\n  return {\n    json: {\n      success: false,\n      error: 'Token requis',\n      respondWithError: true\n    }\n  };\n}\n\nreturn {\n  json: {\n    token: token\n  }\n};"
       },
       "id": "code-extract-token",
       "name": "Extract Token",
@@ -28,7 +28,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT user_id FROM sessions WHERE access_token = $1 AND expires_at > NOW() LIMIT 1",
+        "query": "SELECT user_id FROM sessions WHERE access_token = '{{ $json.token }}' AND expires_at > NOW() LIMIT 1",
         "options": {}
       },
       "id": "postgres-verify-token",
@@ -36,16 +36,17 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [680, 300],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
-          "name": "Job Automation DB"
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "const result = $input.first().json;\n\nif (!result || !result.user_id) {\n  return {\n    json: {\n      success: false,\n      error: 'Token invalide ou expiré'\n    }\n  };\n}\n\nreturn {\n  json: {\n    userId: result.user_id\n  }\n};"
+        "jsCode": "const result = $input.first().json;\n\nif (!result || !result.user_id) {\n  return {\n    json: {\n      success: false,\n      error: 'Token invalide ou expiré',\n      respondWithError: true\n    }\n  };\n}\n\nreturn {\n  json: {\n    userId: result.user_id\n  }\n};"
       },
       "id": "code-check-token",
       "name": "Check Token",
@@ -56,7 +57,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT id, email, first_name, last_name, is_verified, is_active, created_at FROM users WHERE id = $1",
+        "query": "SELECT id, email, first_name, last_name, is_verified, is_active, created_at FROM users WHERE id = '{{ $json.userId }}'",
         "options": {}
       },
       "id": "postgres-get-user",
@@ -64,45 +65,47 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [1120, 300],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
-          "name": "Job Automation DB"
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
         }
       }
     },
     {
       "parameters": {
+        "jsCode": "const user = $input.first().json;\n\nif (!user || !user.id) {\n  return {\n    json: {\n      success: false,\n      error: 'Utilisateur non trouvé',\n      respondWithError: true\n    }\n  };\n}\n\nreturn {\n  json: {\n    userId: user.id,\n    email: user.email,\n    firstName: user.first_name,\n    lastName: user.last_name,\n    isVerified: user.is_verified,\n    isActive: user.is_active,\n    createdAt: user.created_at\n  }\n};"
+      },
+      "id": "code-extract-user",
+      "name": "Extract User Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT id, first_name, last_name, email, phone, location, current_title, years_experience, education_level, skills, languages, desired_positions, desired_sectors, desired_locations, min_salary, contract_types, base_cv_url, linkedin_url, portfolio_url, active FROM candidates WHERE email = $1 LIMIT 1",
+        "query": "SELECT id, first_name, last_name, email, phone, location, current_title, years_experience, education_level, skills, languages, desired_positions, desired_sectors, desired_locations, min_salary, contract_types, base_cv_url, linkedin_url, portfolio_url, active FROM candidates WHERE email = '{{ $json.email }}' LIMIT 1",
         "options": {}
       },
       "id": "postgres-get-candidate",
       "name": "Get Candidate",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
-      "position": [1120, 500],
+      "position": [1560, 100],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
-          "name": "Job Automation DB"
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "const user = $('Get User').first().json;\nconst candidateResult = $('Get Candidate').first().json;\n\nreturn {\n  json: {\n    userId: user.id,\n    email: user.email,\n    firstName: user.first_name,\n    lastName: user.last_name,\n    candidate: candidateResult || null\n  }\n};"
-      },
-      "id": "code-merge-data",
-      "name": "Merge Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1340, 350]
-    },
-    {
-      "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE status = 'sent') as sent, COUNT(*) FILTER (WHERE response_received = true) as responded, COUNT(*) FILTER (WHERE interview_scheduled = true) as interview, COUNT(*) FILTER (WHERE outcome = 'accepted') as accepted FROM applications WHERE candidate_id = (SELECT id FROM candidates WHERE email = $1 LIMIT 1)",
+        "query": "SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE status = 'sent') as sent, COUNT(*) FILTER (WHERE response_received = true) as responded, COUNT(*) FILTER (WHERE interview_scheduled = true) as interview, COUNT(*) FILTER (WHERE outcome = 'accepted') as accepted FROM applications WHERE candidate_id = (SELECT id FROM candidates WHERE email = '{{ $json.email }}' LIMIT 1)",
         "options": {}
       },
       "id": "postgres-get-stats",
@@ -110,17 +113,18 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [1560, 300],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
-          "name": "Job Automation DB"
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
         }
       }
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT a.id, a.status, a.sent_at, a.response_received, a.interview_scheduled, a.outcome, j.title, j.location, c.name as company_name FROM applications a LEFT JOIN job_offers j ON a.job_offer_id = j.id LEFT JOIN companies c ON a.company_id = c.id WHERE a.candidate_id = (SELECT id FROM candidates WHERE email = $1 LIMIT 1) ORDER BY a.sent_at DESC LIMIT 10",
+        "query": "SELECT a.id, a.status, a.sent_at, a.response_received, a.interview_scheduled, a.outcome, j.title, j.location, c.name as company_name FROM applications a LEFT JOIN job_offers j ON a.job_offer_id = j.id LEFT JOIN companies c ON a.company_id = c.id WHERE a.candidate_id = (SELECT id FROM candidates WHERE email = '{{ $json.email }}' LIMIT 1) ORDER BY a.sent_at DESC LIMIT 10",
         "options": {}
       },
       "id": "postgres-get-applications",
@@ -128,22 +132,23 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [1560, 500],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
-          "name": "Job Automation DB"
+          "id": "RCIgOlmToK7XFEry",
+          "name": "job_automation_db"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "const merged = $('Merge Data').first().json;\nconst statsResult = $('Get Statistics').first().json;\nconst applicationsResult = $('Get Applications').all();\n\nconst stats = statsResult ? {\n  total: parseInt(statsResult.total || 0),\n  sent: parseInt(statsResult.sent || 0),\n  responded: parseInt(statsResult.responded || 0),\n  interview: parseInt(statsResult.interview || 0),\n  accepted: parseInt(statsResult.accepted || 0)\n} : { total: 0, sent: 0, responded: 0, interview: 0, accepted: 0 };\n\nconst candidate = merged.candidate ? {\n  id: merged.candidate.id,\n  firstName: merged.candidate.first_name,\n  lastName: merged.candidate.last_name,\n  email: merged.candidate.email,\n  phone: merged.candidate.phone,\n  location: merged.candidate.location,\n  currentTitle: merged.candidate.current_title,\n  yearsExperience: merged.candidate.years_experience,\n  educationLevel: merged.candidate.education_level,\n  skills: merged.candidate.skills,\n  languages: merged.candidate.languages,\n  desiredPositions: merged.candidate.desired_positions,\n  desiredSectors: merged.candidate.desired_sectors,\n  desiredLocations: merged.candidate.desired_locations,\n  minSalary: merged.candidate.min_salary,\n  contractTypes: merged.candidate.contract_types,\n  cvUrl: merged.candidate.base_cv_url,\n  linkedinUrl: merged.candidate.linkedin_url,\n  portfolioUrl: merged.candidate.portfolio_url,\n  active: merged.candidate.active\n} : null;\n\nreturn {\n  json: {\n    user: {\n      id: merged.userId,\n      email: merged.email,\n      firstName: merged.firstName,\n      lastName: merged.lastName,\n      isVerified: false,\n      isActive: true,\n      createdAt: new Date().toISOString()\n    },\n    candidate: candidate,\n    statistics: stats,\n    recentApplications: applicationsResult.map(app => ({\n      id: app.json.id,\n      status: app.json.status,\n      sent_at: app.json.sent_at,\n      response_received: app.json.response_received,\n      interview_scheduled: app.json.interview_scheduled,\n      outcome: app.json.outcome,\n      title: app.json.title,\n      location: app.json.location,\n      company_name: app.json.company_name\n    }))\n  }\n};"
+        "jsCode": "const userResult = $('Extract User Data').first().json;\nconst candidateData = $('Get Candidate').first().json;\nconst statsResult = $('Get Statistics').first().json;\nconst applicationsData = $('Get Applications').all();\n\nconst candidate = candidateData && candidateData.id ? {\n  id: candidateData.id,\n  firstName: candidateData.first_name,\n  lastName: candidateData.last_name,\n  email: candidateData.email,\n  phone: candidateData.phone,\n  location: candidateData.location,\n  currentTitle: candidateData.current_title,\n  yearsExperience: candidateData.years_experience,\n  educationLevel: candidateData.education_level,\n  skills: candidateData.skills,\n  languages: candidateData.languages,\n  desiredPositions: candidateData.desired_positions,\n  desiredSectors: candidateData.desired_sectors,\n  desiredLocations: candidateData.desired_locations,\n  minSalary: candidateData.min_salary,\n  contractTypes: candidateData.contract_types,\n  cvUrl: candidateData.base_cv_url,\n  linkedinUrl: candidateData.linkedin_url,\n  portfolioUrl: candidateData.portfolio_url,\n  active: candidateData.active\n} : null;\n\nconst stats = statsResult ? {\n  total: parseInt(statsResult.total || 0),\n  sent: parseInt(statsResult.sent || 0),\n  responded: parseInt(statsResult.responded || 0),\n  interview: parseInt(statsResult.interview || 0),\n  accepted: parseInt(statsResult.accepted || 0)\n} : { total: 0, sent: 0, responded: 0, interview: 0, accepted: 0 };\n\nconst recentApplications = applicationsData && applicationsData.length > 0 ? applicationsData.map(app => ({\n  id: app.json.id,\n  status: app.json.status,\n  sent_at: app.json.sent_at,\n  response_received: app.json.response_received,\n  interview_scheduled: app.json.interview_scheduled,\n  outcome: app.json.outcome,\n  title: app.json.title,\n  location: app.json.location,\n  company_name: app.json.company_name\n})) : [];\n\nreturn {\n  json: {\n    user: {\n      id: userResult.userId,\n      email: userResult.email,\n      firstName: userResult.firstName,\n      lastName: userResult.lastName,\n      isVerified: userResult.isVerified,\n      isActive: userResult.isActive,\n      createdAt: userResult.createdAt\n    },\n    candidate: candidate,\n    statistics: stats,\n    recentApplications: recentApplications\n  }\n};"
       },
-      "id": "code-format-response",
-      "name": "Format Response",
+      "id": "code-merge-data",
+      "name": "Merge Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1780, 400]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -155,12 +160,12 @@
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [2000, 400]
+      "position": [2000, 300]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ $json }}",
+        "responseBody": "={{ {\n  \"success\": false,\n  \"error\": $json.error\n} }}",
         "options": {
           "responseCode": 401
         }
@@ -189,6 +194,13 @@
         [
           {
             "node": "Verify Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
             "type": "main",
             "index": 0
           }
@@ -228,7 +240,35 @@
       "main": [
         [
           {
+            "node": "Extract User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract User Data": {
+      "main": [
+        [
+          {
             "node": "Get Candidate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Statistics",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Applications",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
             "type": "main",
             "index": 0
           }
@@ -246,22 +286,11 @@
         ]
       ]
     },
-    "Merge Data": {
-      "main": [
-        [
-          {
-            "node": "Get Statistics",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get Statistics": {
       "main": [
         [
           {
-            "node": "Get Applications",
+            "node": "Merge Data",
             "type": "main",
             "index": 0
           }
@@ -272,14 +301,14 @@
       "main": [
         [
           {
-            "node": "Format Response",
+            "node": "Merge Data",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Format Response": {
+    "Merge Data": {
       "main": [
         [
           {
@@ -292,12 +321,8 @@
     }
   },
   "pinData": {},
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2025-10-31T00:00:00.000Z",
-  "versionId": "1"
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c20750a766bf706ae816bbff3777385b2eef92cf9418f2aea21c75d2277c69c2"
+  }
 }
