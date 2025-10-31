@@ -4,6 +4,237 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Check, Zap, Target, TrendingUp, Clock, ArrowRight, Users, Briefcase } from 'lucide-react';
 
+// AI Visualization Component
+function AIVisualization() {
+  const particles = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 6 + 2,
+    delay: i * 0.1,
+    duration: 6 + Math.random() * 4,
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated background gradient */}
+      <motion.div
+        animate={{
+          background: [
+            'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)',
+            'radial-gradient(circle at 80% 50%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)',
+            'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)',
+          ],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="absolute inset-0"
+      />
+
+      {/* Neural network nodes */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-30"
+        viewBox="0 0 1000 400"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        {/* Animated connecting lines */}
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        >
+          <line x1="150" y1="100" x2="400" y2="150" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="2" />
+          <line x1="400" y1="150" x2="650" y2="100" stroke="rgba(34, 211, 238, 0.3)" strokeWidth="2" />
+          <line x1="150" y1="250" x2="400" y2="200" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="2" />
+          <line x1="400" y1="200" x2="650" y2="250" stroke="rgba(34, 211, 238, 0.3)" strokeWidth="2" />
+          <line x1="150" y1="100" x2="150" y2="250" stroke="rgba(100, 200, 255, 0.2)" strokeWidth="2" />
+          <line x1="650" y1="100" x2="650" y2="250" stroke="rgba(100, 200, 255, 0.2)" strokeWidth="2" />
+        </motion.g>
+
+        {/* Pulsing nodes */}
+        {[
+          { cx: 150, cy: 100 },
+          { cx: 150, cy: 250 },
+          { cx: 400, cy: 150 },
+          { cx: 400, cy: 200 },
+          { cx: 650, cy: 100 },
+          { cx: 650, cy: 250 },
+        ].map((node, i) => (
+          <motion.circle
+            key={i}
+            cx={node.cx}
+            cy={node.cy}
+            r={6}
+            fill="rgba(34, 211, 238, 0.8)"
+            animate={{
+              r: [6, 10, 6],
+              opacity: [0.6, 1, 0.6],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: i * 0.3,
+            }}
+          />
+        ))}
+      </svg>
+
+      {/* Floating particles with flowing animation */}
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 blur-sm"
+          style={{
+            width: particle.size,
+            height: particle.size,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            y: [0, -300, 0],
+            x: [0, Math.sin(particle.id) * 100, 0],
+            opacity: [0, 0.8, 0],
+            scale: [0, 1, 0],
+          }}
+          transition={{
+            duration: particle.duration,
+            repeat: Infinity,
+            delay: particle.delay,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
+      {/* Glowing orbs */}
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={`orb-${i}`}
+          className="absolute rounded-full"
+          style={{
+            width: 200 + i * 100,
+            height: 200 + i * 100,
+            left: `${20 + i * 30}%`,
+            top: `${10 + i * 20}%`,
+            background: i === 0
+              ? 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)'
+              : i === 1
+              ? 'radial-gradient(circle, rgba(34, 211, 238, 0.08) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(6, 182, 212, 0.05) 0%, transparent 70%)',
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.5, 0.8, 0.5],
+          }}
+          transition={{
+            duration: 6 + i,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
+      {/* Data flow lines - animated */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 1000 400"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <linearGradient id="flowGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(59, 130, 246, 0)" />
+            <stop offset="50%" stopColor="rgba(34, 211, 238, 0.6)" />
+            <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
+          </linearGradient>
+          <linearGradient id="flowGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(34, 211, 238, 0)" />
+            <stop offset="50%" stopColor="rgba(59, 130, 246, 0.6)" />
+            <stop offset="100%" stopColor="rgba(34, 211, 238, 0)" />
+          </linearGradient>
+        </defs>
+
+        {/* Horizontal flowing lines */}
+        <motion.line
+          x1="0"
+          y1="120"
+          x2="1000"
+          y2="120"
+          stroke="url(#flowGradient1)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          animate={{
+            strokeDasharray: [1000, 1000],
+            strokeDashoffset: [1000, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        />
+
+        <motion.line
+          x1="1000"
+          y1="240"
+          x2="0"
+          y2="240"
+          stroke="url(#flowGradient1)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          animate={{
+            strokeDasharray: [1000, 1000],
+            strokeDashoffset: [0, -1000],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        />
+
+        {/* Vertical flowing lines */}
+        <motion.line
+          x1="300"
+          y1="0"
+          x2="300"
+          y2="400"
+          stroke="url(#flowGradient2)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          animate={{
+            strokeDasharray: [400, 400],
+            strokeDashoffset: [400, 0],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        />
+
+        <motion.line
+          x1="700"
+          y1="400"
+          x2="700"
+          y2="0"
+          stroke="url(#flowGradient2)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          animate={{
+            strokeDasharray: [400, 400],
+            strokeDashoffset: [0, -400],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        />
+      </svg>
+    </div>
+  );
+}
+
 export default function StartPage() {
   return (
     <main className="w-full min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
@@ -39,86 +270,92 @@ export default function StartPage() {
       </nav>
 
       {/* Hero Section - Minimal, Action-Oriented */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Trust Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-full"
-          >
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-blue-300 text-sm font-semibold">12,500+ candidats actifs</span>
-          </motion.div>
+      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+        {/* AI Visualization Background */}
+        <AIVisualization />
 
-          {/* Main Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-6xl font-bold mb-6 leading-tight"
-          >
-            Envoie <span className="text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">50+ candidatures</span> au lieu de 5
-          </motion.h1>
-
-          {/* Subheading - More Concrete */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-slate-300 mb-8 leading-relaxed max-w-2xl mx-auto"
-          >
-            RecruitAI automatise ta recherche d'emploi: trouve les meilleures offres, génère des CVs adaptés à chaque job, et envoie tes candidatures automatiquement. Le tout en 3 minutes.
-          </motion.p>
-
-          {/* Key Metrics - Concrete Results */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10"
-          >
-            {[
-              { metric: '50+', label: 'candidatures/mois' },
-              { metric: '+60%', label: 'plus de réponses' },
-              { metric: '20h', label: 'temps sauvegardé' },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4"
-              >
-                <div className="text-3xl font-bold text-cyan-400 mb-1">{item.metric}</div>
-                <div className="text-slate-400 text-sm">{item.label}</div>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Primary CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Link
-              href="/onboarding"
-              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group"
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 items-center gap-12">
+          {/* Left Side - Text Content */}
+          <div className="relative z-10">
+            {/* Trust Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-full"
             >
-              Commencer maintenant (gratuit)
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
-            </Link>
-          </motion.div>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-blue-300 text-sm font-semibold">12,500+ candidats actifs</span>
+            </motion.div>
 
-          {/* Social Proof */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-8 text-slate-400 text-sm"
-          >
-            <p>✓ Sans carte bancaire • ✓ Résultats en 24h • ✓ 4.9/5 ⭐</p>
-          </motion.div>
+            {/* Main Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-5xl md:text-5xl font-bold mb-6 leading-tight text-left"
+            >
+              Envoie <span className="text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">50+ candidatures</span> au lieu de 5
+            </motion.h1>
+
+            {/* Subheading - More Concrete */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg text-slate-300 mb-8 leading-relaxed text-left"
+            >
+              RecruitAI automatise ta recherche d'emploi: trouve les meilleures offres, génère des CVs adaptés à chaque job, et envoie tes candidatures automatiquement.
+            </motion.p>
+
+            {/* Key Metrics - Concrete Results */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="grid grid-cols-3 gap-3 mb-8"
+            >
+              {[
+                { metric: '50+', label: 'candidatures' },
+                { metric: '+60%', label: 'réponses' },
+                { metric: '20h', label: 'sauvegardées' },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3"
+                >
+                  <div className="text-2xl font-bold text-cyan-400 mb-1">{item.metric}</div>
+                  <div className="text-slate-400 text-xs">{item.label}</div>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Primary CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="flex flex-col gap-3 text-left"
+            >
+              <Link
+                href="/onboarding"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group w-fit"
+              >
+                Commencer maintenant (gratuit)
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
+              </Link>
+
+              {/* Social Proof */}
+              <p className="text-slate-400 text-sm">
+                ✓ Sans carte bancaire • ✓ Résultats en 24h • ✓ 4.9/5 ⭐
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Right Side - AI Visualization (Desktop Only) */}
+          <div className="hidden md:block relative h-96 md:h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-cyan-600/5 rounded-2xl"></div>
+          </div>
         </div>
       </section>
 
