@@ -101,4 +101,4 @@ export type {
 } from './entities'
 
 // ============ Chat Types (existing) ============
-export type { Message, ChatSession, ChatMessage } from './chat'
+export type { ChatMessage } from './chat'
