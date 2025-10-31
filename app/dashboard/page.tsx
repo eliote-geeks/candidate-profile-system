@@ -7,7 +7,8 @@ import { motion } from 'framer-motion';
 import {
   LogOut, Mail, MapPin, Briefcase, Award, TrendingUp, Send,
   CheckCircle, Clock, User, Code, Globe, FileText, Linkedin,
-  Zap, Target, BarChart3, Sparkles
+  Zap, Target, BarChart3, Sparkles, Phone, Trash2, ArrowRight,
+  Eye, EyeOff, Plus, X
 } from 'lucide-react';
 
 interface Profile {
@@ -57,23 +58,36 @@ interface Profile {
   }>;
 }
 
-const containerVariants: any = {
+const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
     },
   },
 };
 
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
+    transition: { type: 'spring', stiffness: 400, damping: 40 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
     transition: { type: 'spring', stiffness: 300, damping: 30 },
+  },
+  hover: {
+    scale: 1.02,
+    transition: { type: 'spring', stiffness: 400, damping: 40 },
   },
 };
 
@@ -87,6 +101,7 @@ export default function Dashboard() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [newSkill, setNewSkill] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -106,7 +121,6 @@ export default function Dashboard() {
         const data = await response.json();
         console.log('Profile response:', data);
 
-        // Always set profile if data exists, even if it's fallback data
         if (data.success && data.data) {
           setProfile(data.data);
         } else {
@@ -244,16 +258,35 @@ export default function Dashboard() {
     }
   };
 
+  const addSkill = () => {
+    if (newSkill.trim() && editData) {
+      setEditData({
+        ...editData,
+        skills: [...(editData.skills || []), newSkill],
+      });
+      setNewSkill('');
+    }
+  };
+
+  const removeSkill = (index: number) => {
+    if (editData) {
+      setEditData({
+        ...editData,
+        skills: editData.skills?.filter((_: string, i: number) => i !== index) || [],
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
           className="text-center"
         >
-          <div className="w-12 h-12 rounded-full border-2 border-cyan-400 border-t-transparent mx-auto mb-4 animate-spin"></div>
-          <p className="text-white">Chargement de votre profil...</p>
+          <div className="w-16 h-16 rounded-full border-4 border-cyan-400 border-t-transparent mx-auto mb-6 animate-spin"></div>
+          <p className="text-white text-lg font-medium">Chargement de votre profil...</p>
         </motion.div>
       </div>
     );
@@ -261,16 +294,16 @@ export default function Dashboard() {
 
   if (error || !profile) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center backdrop-blur-xl bg-slate-900/40 border border-red-500/30 rounded-3xl p-8"
+          className="text-center backdrop-blur-xl bg-gradient-to-br from-red-950/40 to-slate-900/40 border border-red-500/30 rounded-3xl p-12 max-w-md"
         >
-          <p className="text-red-400 mb-6 text-lg">{error || 'Erreur de chargement'}</p>
+          <p className="text-red-400 mb-8 text-lg">{error || 'Erreur de chargement'}</p>
           <button
             onClick={() => router.push('/login')}
-            className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-full transition font-semibold text-white"
+            className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-xl transition font-semibold text-white"
           >
             Retour à l'accueil
           </button>
@@ -286,16 +319,16 @@ export default function Dashboard() {
   const acceptanceRate = stats.total > 0 ? Math.round((stats.accepted / stats.total) * 100) : 0;
 
   return (
-    <main className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
-      {/* Animated background gradient */}
-      <div className="fixed inset-0 opacity-30">
+    <main className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 opacity-30 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
         <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Navigation - Glass Morphism */}
-      <nav className="fixed top-0 w-full z-50 backdrop-blur-xl bg-slate-950/40 border-b border-cyan-500/20">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 backdrop-blur-xl bg-gradient-to-br from-slate-950/80 to-slate-900/80 border-b border-cyan-500/20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -310,9 +343,10 @@ export default function Dashboard() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowDeleteModal(true)}
-              className="flex items-center gap-2 text-red-300 hover:text-red-200 transition px-4 py-2 rounded-lg hover:bg-red-500/10"
+              className="flex items-center gap-2 text-red-400 hover:text-red-300 transition px-4 py-2 rounded-lg hover:bg-red-500/10"
             >
-              🗑️ Supprimer
+              <Trash2 size={18} />
+              Supprimer
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -335,85 +369,83 @@ export default function Dashboard() {
             initial="hidden"
             animate="visible"
           >
-            {/* Profile Header - Glass Morphism */}
+            {/* Hero Profile Section */}
             <motion.div
-              variants={itemVariants}
-              className="mb-12 backdrop-blur-xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-cyan-500/30 rounded-3xl p-10 overflow-hidden group"
+              variants={cardVariants}
+              whileHover="hover"
+              className="mb-12 relative backdrop-blur-xl bg-gradient-to-br from-cyan-500/10 via-slate-800/30 to-purple-500/10 border border-cyan-500/30 rounded-3xl p-10 overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
-              <div className="relative">
-                <div className="flex items-start justify-between mb-8">
+              {/* Decorative gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500 rounded-3xl"></div>
+
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-10">
                   <div>
-                    <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
+                    <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-white via-cyan-200 to-blue-300 bg-clip-text text-transparent">
                       {user.firstName} {user.lastName}
                     </h1>
-                    <p className="text-slate-300 flex items-center gap-2 text-lg">
-                      <Mail size={18} className="text-cyan-400" /> {user.email}
-                    </p>
+                    <div className="flex items-center gap-4 text-slate-300">
+                      <div className="flex items-center gap-2">
+                        <Mail size={18} className="text-cyan-400" />
+                        {user.email}
+                      </div>
+                      {user.isVerified && (
+                        <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-green-500/20 border border-green-500/50 text-green-300 text-sm">
+                          <CheckCircle size={16} />
+                          Vérifié
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {user.isVerified && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-500/50 text-green-300 px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2"
-                      >
-                        <CheckCircle size={16} /> Vérifié
-                      </motion.span>
-                    )}
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleEditProfile}
-                      className="px-4 py-2 backdrop-blur-lg bg-gradient-to-r from-cyan-500/40 to-blue-500/40 border border-cyan-500/50 text-cyan-200 rounded-xl hover:from-cyan-500/60 hover:to-blue-500/60 transition font-semibold"
-                    >
-                      ✏️ Éditer
-                    </motion.button>
-                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleEditProfile}
+                    className="px-6 py-3 backdrop-blur-lg bg-gradient-to-r from-cyan-500/40 to-blue-500/40 border border-cyan-500/50 text-cyan-200 rounded-xl hover:from-cyan-500/60 hover:to-blue-500/60 transition font-semibold flex items-center gap-2"
+                  >
+                    <User size={18} />
+                    Éditer
+                  </motion.button>
                 </div>
 
                 {candidate && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-cyan-500/20">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-8 border-t border-cyan-500/20">
                     {candidate.currentTitle && (
                       <motion.div
                         variants={itemVariants}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-cyan-500/10 transition"
+                        className="group/item p-4 rounded-xl hover:bg-cyan-500/10 transition"
                       >
-                        <div className="p-2 bg-cyan-500/20 rounded-lg">
-                          <Briefcase size={20} className="text-cyan-400" />
-                        </div>
-                        <div>
-                          <p className="text-slate-400 text-xs uppercase tracking-wide">Poste actuel</p>
-                          <p className="font-semibold text-lg">{candidate.currentTitle}</p>
-                        </div>
+                        <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Poste actuel</p>
+                        <p className="font-semibold text-lg text-white group-hover/item:text-cyan-300 transition">{candidate.currentTitle}</p>
                       </motion.div>
                     )}
                     {candidate.location && (
                       <motion.div
                         variants={itemVariants}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-cyan-500/10 transition"
+                        className="group/item p-4 rounded-xl hover:bg-cyan-500/10 transition"
                       >
-                        <div className="p-2 bg-cyan-500/20 rounded-lg">
-                          <MapPin size={20} className="text-cyan-400" />
-                        </div>
-                        <div>
-                          <p className="text-slate-400 text-xs uppercase tracking-wide">Localisation</p>
-                          <p className="font-semibold text-lg">{candidate.location}</p>
-                        </div>
+                        <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Localisation</p>
+                        <p className="font-semibold text-lg text-white group-hover/item:text-cyan-300 transition">{candidate.location}</p>
                       </motion.div>
                     )}
-                    {candidate.yearsExperience !== undefined && (
+                    {candidate.yearsExperience !== undefined && candidate.yearsExperience > 0 && (
                       <motion.div
                         variants={itemVariants}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-cyan-500/10 transition"
+                        className="group/item p-4 rounded-xl hover:bg-cyan-500/10 transition"
                       >
-                        <div className="p-2 bg-cyan-500/20 rounded-lg">
-                          <Award size={20} className="text-cyan-400" />
-                        </div>
-                        <div>
-                          <p className="text-slate-400 text-xs uppercase tracking-wide">Expérience</p>
-                          <p className="font-semibold text-lg">{candidate.yearsExperience} ans</p>
-                        </div>
+                        <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Expérience</p>
+                        <p className="font-semibold text-lg text-white group-hover/item:text-cyan-300 transition">{candidate.yearsExperience} ans</p>
+                      </motion.div>
+                    )}
+                    {candidate.minSalary && candidate.minSalary > 0 && (
+                      <motion.div
+                        variants={itemVariants}
+                        className="group/item p-4 rounded-xl hover:bg-cyan-500/10 transition"
+                      >
+                        <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Salaire attendu</p>
+                        <p className="font-semibold text-lg text-cyan-300 group-hover/item:text-cyan-200 transition">
+                          {candidate.minSalary.toLocaleString('fr-FR')} FCFA
+                        </p>
                       </motion.div>
                     )}
                   </div>
@@ -421,12 +453,12 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
-            {/* Statistics Section - 2025 Style */}
+            {/* Statistics Grid */}
             <motion.div
               variants={itemVariants}
               className="mb-12"
             >
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
+              <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
                 <BarChart3 size={28} className="text-cyan-400" />
                 Vue d'ensemble
               </h2>
@@ -476,8 +508,8 @@ export default function Dashboard() {
                 ].map((stat, idx) => (
                   <motion.div
                     key={idx}
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05, translateY: -5 }}
+                    variants={cardVariants}
+                    whileHover="hover"
                     className={`backdrop-blur-xl bg-gradient-to-br ${stat.gradient} border ${stat.borderColor} rounded-2xl p-6 group cursor-pointer relative overflow-hidden`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
@@ -560,10 +592,14 @@ export default function Dashboard() {
                       href={candidate.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-4 rounded-xl hover:bg-cyan-500/20 transition border border-cyan-500/20"
+                      className="flex items-center gap-3 p-4 rounded-xl hover:bg-cyan-500/20 transition border border-cyan-500/20 group"
                     >
-                      <Linkedin size={20} className="text-cyan-400" />
-                      <span className="font-semibold">Profil LinkedIn</span>
+                      <Linkedin size={20} className="text-cyan-400 group-hover:text-cyan-300 transition" />
+                      <div>
+                        <p className="text-xs text-slate-400 uppercase">Profil</p>
+                        <span className="font-semibold group-hover:text-cyan-300 transition">LinkedIn</span>
+                      </div>
+                      <ArrowRight size={16} className="ml-auto opacity-0 group-hover:opacity-100 transition" />
                     </motion.a>
                   )}
                   {candidate.portfolioUrl && (
@@ -572,18 +608,22 @@ export default function Dashboard() {
                       href={candidate.portfolioUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-4 rounded-xl hover:bg-cyan-500/20 transition border border-cyan-500/20"
+                      className="flex items-center gap-3 p-4 rounded-xl hover:bg-cyan-500/20 transition border border-cyan-500/20 group"
                     >
-                      <Globe size={20} className="text-cyan-400" />
-                      <span className="font-semibold">Portfolio</span>
+                      <Globe size={20} className="text-cyan-400 group-hover:text-cyan-300 transition" />
+                      <div>
+                        <p className="text-xs text-slate-400 uppercase">Site</p>
+                        <span className="font-semibold group-hover:text-cyan-300 transition">Portfolio</span>
+                      </div>
+                      <ArrowRight size={16} className="ml-auto opacity-0 group-hover:opacity-100 transition" />
                     </motion.a>
                   )}
                   {candidate.minSalary && (
                     <div className="flex items-center gap-3 p-4 rounded-xl border border-cyan-500/20">
                       <Target size={20} className="text-cyan-400" />
                       <div>
-                        <p className="text-slate-400 text-xs uppercase">Salaire attendu</p>
-                        <p className="text-xl font-bold text-cyan-400">{candidate.minSalary.toLocaleString()} €</p>
+                        <p className="text-slate-400 text-xs uppercase">Salaire min</p>
+                        <p className="text-xl font-bold text-cyan-400">{candidate.minSalary.toLocaleString('fr-FR')} FCFA</p>
                       </div>
                     </div>
                   )}
@@ -655,78 +695,151 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Edit Modal - 2025 Style */}
+      {/* Edit Profile Modal - 2025 Premium Design */}
       {editMode && editData && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setEditMode(false)}
         >
           <motion.div
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-cyan-500/30 rounded-3xl p-10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="backdrop-blur-xl bg-gradient-to-br from-slate-800/95 to-slate-900/95 border border-cyan-500/30 rounded-3xl p-10 max-w-3xl w-full max-h-[90vh] overflow-y-auto"
           >
-            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Éditer votre profil
-            </h2>
-
-            <div className="space-y-6">
-              {[
-                { label: 'Titre actuel', key: 'currentTitle', type: 'text' },
-                { label: 'Localisation', key: 'location', type: 'text' },
-                { label: 'Années d\'expérience', key: 'yearsExperience', type: 'number' },
-                { label: 'Niveau d\'études', key: 'educationLevel', type: 'text' },
-                { label: 'Salaire attendu (€)', key: 'minSalary', type: 'number' },
-                { label: 'URL LinkedIn', key: 'linkedinUrl', type: 'text' },
-                { label: 'URL Portfolio', key: 'portfolioUrl', type: 'text' },
-              ].map((field) => (
-                <div key={field.key}>
-                  <label className="block text-slate-300 text-sm font-semibold mb-2 uppercase tracking-wide">
-                    {field.label}
-                  </label>
-                  <input
-                    type={field.type}
-                    value={editData[field.key] || ''}
-                    onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        [field.key]: field.type === 'number' ? parseInt(e.target.value) || '' : e.target.value,
-                      })
-                    }
-                    className="w-full backdrop-blur-lg bg-slate-800/50 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
-                  />
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                Éditer votre profil
+              </h2>
+              <button
+                onClick={() => setEditMode(false)}
+                className="p-2 hover:bg-slate-700/50 rounded-lg transition"
+              >
+                <X size={24} className="text-slate-400" />
+              </button>
             </div>
 
-            <div className="flex gap-4 mt-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {[
+                { label: 'Titre actuel', key: 'currentTitle', type: 'text', icon: Briefcase },
+                { label: 'Localisation', key: 'location', type: 'text', icon: MapPin },
+                { label: 'Années d\'expérience', key: 'yearsExperience', type: 'number', icon: Award },
+                { label: 'Niveau d\'études', key: 'educationLevel', type: 'text', icon: User },
+                { label: 'Salaire attendu (FCFA)', key: 'minSalary', type: 'number', icon: Target },
+                { label: 'Téléphone', key: 'phone', type: 'tel', icon: Phone },
+                { label: 'URL LinkedIn', key: 'linkedinUrl', type: 'url', icon: Linkedin },
+                { label: 'URL Portfolio', key: 'portfolioUrl', type: 'url', icon: Globe },
+              ].map((field) => {
+                const Icon = field.icon;
+                return (
+                  <div key={field.key}>
+                    <label className="block text-slate-300 text-sm font-semibold mb-3 uppercase tracking-wide flex items-center gap-2">
+                      <Icon size={16} className="text-cyan-400" />
+                      {field.label}
+                    </label>
+                    <input
+                      type={field.type}
+                      value={editData[field.key] || ''}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          [field.key]: field.type === 'number' ? (e.target.value ? parseInt(e.target.value) : '') : e.target.value,
+                        })
+                      }
+                      placeholder={field.label}
+                      className="w-full backdrop-blur-lg bg-slate-800/50 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:bg-slate-800/70 transition"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Skills Section */}
+            <div className="mb-8">
+              <label className="block text-slate-300 text-sm font-semibold mb-4 uppercase tracking-wide flex items-center gap-2">
+                <Code size={16} className="text-cyan-400" />
+                Compétences
+              </label>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      addSkill();
+                    }
+                  }}
+                  placeholder="Ajouter une compétence..."
+                  className="flex-1 backdrop-blur-lg bg-slate-800/50 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+                />
+                <button
+                  onClick={addSkill}
+                  className="px-6 py-3 bg-gradient-to-r from-cyan-500/40 to-blue-500/40 border border-cyan-500/50 text-cyan-200 rounded-xl hover:from-cyan-500/60 hover:to-blue-500/60 transition font-semibold flex items-center gap-2"
+                >
+                  <Plus size={18} />
+                  Ajouter
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {editData.skills?.map((skill: string, idx: number) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="backdrop-blur-lg bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-500/50 text-cyan-200 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 group hover:from-cyan-500/50 hover:to-blue-500/50 transition"
+                  >
+                    {skill}
+                    <button
+                      onClick={() => removeSkill(idx)}
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-4 pt-8 border-t border-cyan-500/20">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSaveProfile}
                 disabled={saving}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-xl font-semibold text-white transition disabled:opacity-50"
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-xl font-semibold text-white transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {saving ? 'Sauvegarde...' : '💾 Sauvegarder'}
+                {saving ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Sauvegarde...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={20} />
+                    Sauvegarder
+                  </>
+                )}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setEditMode(false)}
-                className="flex-1 px-6 py-3 backdrop-blur-lg bg-slate-800/50 border border-slate-600/50 rounded-xl font-semibold text-white hover:bg-slate-800 transition"
+                className="flex-1 px-6 py-4 backdrop-blur-lg bg-slate-800/50 border border-slate-600/50 rounded-xl font-semibold text-white hover:bg-slate-800 transition"
               >
-                ❌ Annuler
+                Annuler
               </motion.button>
             </div>
           </motion.div>
         </motion.div>
       )}
 
-      {/* Delete Account Modal - 2025 Style */}
+      {/* Delete Account Modal */}
       {showDeleteModal && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -744,13 +857,13 @@ export default function Dashboard() {
             <div className="text-center">
               <div className="text-6xl mb-4">⚠️</div>
               <h2 className="text-3xl font-bold mb-4 text-red-400">Supprimer le compte</h2>
-              <p className="text-slate-300 mb-6">
+              <p className="text-slate-300 mb-8">
                 Cette action est irréversible. Tous vos données seront définitivement supprimées.
               </p>
 
-              <div className="mb-6">
-                <p className="text-slate-400 text-sm mb-3">
-                  Tapez <span className="font-bold text-red-400">"SUPPRIMER"</span> pour confirmer:
+              <div className="mb-8">
+                <p className="text-slate-400 text-sm mb-4">
+                  Tapez <span className="font-bold text-red-400">SUPPRIMER</span> pour confirmer:
                 </p>
                 <input
                   type="text"
@@ -769,7 +882,7 @@ export default function Dashboard() {
                   disabled={saving || deleteConfirm !== 'SUPPRIMER'}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 rounded-xl font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {saving ? '...' : '🔴 Supprimer'}
+                  {saving ? '...' : 'Supprimer'}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -780,7 +893,7 @@ export default function Dashboard() {
                   }}
                   className="flex-1 px-6 py-3 backdrop-blur-lg bg-slate-800/50 border border-slate-600/50 rounded-xl font-semibold text-white hover:bg-slate-800 transition"
                 >
-                  ❌ Annuler
+                  Annuler
                 </motion.button>
               </div>
             </div>
@@ -811,6 +924,24 @@ export default function Dashboard() {
 
         .animation-delay-4000 {
           animation-delay: 4s;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: rgba(34, 211, 238, 0.3);
+          border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgba(34, 211, 238, 0.5);
         }
       `}</style>
     </main>
