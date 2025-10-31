@@ -9,20 +9,29 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      // Supprimer le token du localStorage
+      // Récupérer le token du localStorage
+      const token = localStorage.getItem('auth_token');
+
+      // Appeler l'API de déconnexion
+      if (token) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+      }
+
+      // Supprimer le token et les données du localStorage
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-
-      // Appeler l'API de déconnexion (optionnel si tu crées le workflow)
-      // await fetch('https://reveilart4arist.com/webhook/auth-logout', {
-      //   method: 'POST',
-      //   headers: { 'Authorization': `Bearer ${token}` }
-      // });
 
       // Rediriger vers la page de login
       router.push('/login');
     } catch (error) {
       console.error('Erreur lors de la déconnexion', error);
+      // Supprimer le token quand même
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
       // Rediriger quand même
       router.push('/login');
     }
