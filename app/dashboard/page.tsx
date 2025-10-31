@@ -103,19 +103,18 @@ export default function Dashboard() {
           },
         });
 
-        if (!response.ok) {
-          throw new Error('Impossible de récupérer le profil');
-        }
-
         const data = await response.json();
-        if (data.success) {
+        console.log('Profile response:', data);
+
+        // Always set profile if data exists, even if it's fallback data
+        if (data.success && data.data) {
           setProfile(data.data);
         } else {
           setError(data.error || 'Erreur lors de la récupération du profil');
         }
       } catch (err) {
-        setError('Une erreur est survenue');
-        console.error(err);
+        setError('Une erreur est survenue lors de la récupération du profil');
+        console.error('Fetch error:', err);
       } finally {
         setLoading(false);
       }
