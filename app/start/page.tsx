@@ -293,7 +293,7 @@ export default function StartPage() {
               className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-full"
             >
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-blue-300 text-sm font-semibold">12,500+ candidats actifs</span>
+              <span className="text-blue-300 text-sm font-semibold">Bêta privée · Novembre 2025</span>
             </motion.div>
 
             {/* Main Headline */}
@@ -303,7 +303,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-5xl md:text-5xl font-bold mb-6 leading-tight text-left"
             >
-              Envoie <span className="text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">50+ candidatures</span> au lieu de 5
+              Ton copilote IA pour la recherche d’emploi au Cameroun
             </motion.h1>
 
             {/* Subheading - More Concrete */}
@@ -313,7 +313,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg text-slate-300 mb-8 leading-relaxed text-left"
             >
-              RecruitAI automatise ta recherche d'emploi: trouve les meilleures offres, génère des CVs adaptés à chaque job, et envoie tes candidatures automatiquement.
+              Chat onboarding, workflows n8n et génération de CV sur mesure : RecruitAI cartographie les offres locales, adapte tes candidatures et suit chaque réponse depuis un VPS souverain.
             </motion.p>
 
             {/* Key Metrics - Concrete Results */}
@@ -324,9 +324,9 @@ export default function StartPage() {
               className="grid grid-cols-3 gap-3 mb-8"
             >
               {[
-                { metric: '50+', label: 'candidatures' },
-                { metric: '+60%', label: 'réponses' },
-                { metric: '20h', label: 'sauvegardées' },
+                { metric: '6', label: 'profils accompagnés en pilote' },
+                { metric: '90', label: 'offres locales qualifiées (Oct–Nov 2025)' },
+                { metric: '≈3 min', label: 'pour compléter le chat onboarding' },
               ].map((item, i) => (
                 <div
                   key={i}
@@ -350,7 +350,7 @@ export default function StartPage() {
                   href="/register"
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group"
                 >
-                  S'inscrire gratuitement
+                  Demander un accès bêta
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
                 </Link>
 
@@ -358,13 +358,13 @@ export default function StartPage() {
                   href="/login"
                   className="px-8 py-4 bg-slate-800/50 border-2 border-slate-600 rounded-lg text-white font-semibold text-lg hover:border-cyan-500 hover:bg-slate-800 transition inline-flex items-center justify-center gap-2 group"
                 >
-                  Se connecter
+                  Se connecter (bêta)
                 </Link>
               </div>
 
               {/* Social Proof */}
               <p className="text-slate-400 text-sm">
-                ✓ Sans carte bancaire • ✓ Résultats en 24h • ✓ 4.9/5 ⭐
+                ✓ Données hébergées sur ton propre VPS · ✓ Workflows auditables · ✓ Support Discord pilote
               </p>
             </motion.div>
           </div>
@@ -393,24 +393,24 @@ export default function StartPage() {
               {[
                 {
                   step: 1,
-                  title: 'Crée ton profil',
-                  desc: 'Réponds à quelques questions simples sur tes compétences et préférences. C\'est rapide et facile.',
-                  time: '2 min',
+                  title: 'Onboarding conversationnel',
+                  desc: 'Le chat RecruitAI capture tes compétences, secteurs visés et préférences en langage naturel. Les données sont stockées dans Postgres (job_automation_db).',
+                  time: '≈3 min',
                   icon: '📝',
                   color: 'blue',
                 },
                 {
                   step: 2,
-                  title: 'Génère des CVs',
-                  desc: 'Notre IA adapte ton CV pour chaque offre d\'emploi automatiquement. Zero effort.',
-                  time: 'Instant',
+                  title: 'Workflows n8n orchestrés',
+                  desc: 'Les modules Intelligence → Qualification → Generation enrichissent ton profil, scrappent les offres locales et préparent CV & pitch via Gotenberg et Gemini.',
+                  time: 'Continu',
                   icon: '🤖',
                   color: 'cyan',
                 },
                 {
                   step: 3,
-                  title: 'Candidatures auto',
-                  desc: 'Envoie jusqu\'à 50+ candidatures/mois en 1 clic. Suivi en temps réel de tes réponses.',
+                  title: 'Envoi & suivi automatisés',
+                  desc: 'Les scénarios Application & Follow-up déclenchent les candidatures, loggent chaque réponse et sync les tokens de session côté Next.js pour ton tableau de bord.',
                   time: 'Auto',
                   icon: '✈️',
                   color: 'purple',
@@ -539,34 +539,34 @@ export default function StartPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               {
-                icon: '🤖',
-                title: 'Sélection IA intelligente',
-                desc: 'L\'algorithme filtre les 1000+ offres quotidiennes pour te proposer seulement celles qui correspondent à ton profil. Zéro perte de temps.',
+                icon: '💬',
+                title: 'Onboarding façon copilote',
+                desc: 'Une interface chat 2025 qui transforme tes réponses en données structurées (skills, secteurs, prétentions salariales) directement dans Postgres.',
               },
               {
-                icon: '📄',
-                title: 'CVs adaptés = Plus de réponses',
-                desc: 'Chaque CV est personnalisé avec les mots-clés de l\'offre. +60% de chances de réponse prouvé en AB test.',
+                icon: '🔁',
+                title: 'Automations modulaire n8n',
+                desc: '6 modules (Intelligence → Analytics) enchaînent scrapers, analyseurs, générateurs de CV et webhooks. Chaque nœud est versionné et transparent.',
               },
               {
-                icon: '⚡',
-                title: 'Automatisation totale',
-                desc: 'Pendant que tu dors, tes candidatures partent automatiquement. Plus besoin de cliquer, remplir, envoyer.',
+                icon: '🧠',
+                title: 'Génération de contenu contextualisée',
+                desc: 'Gotenberg + Gemini adaptent ton CV et tes messages pour chaque offre. Pas de texte générique, tout est relié aux données de ton profil.',
               },
               {
-                icon: '🎯',
-                title: 'Scoring "arnaqueur" détection',
-                desc: 'Identifie les offres douteuses et les arnaqueurs potentiels. Protège ton temps et ton argent.',
+                icon: '📡',
+                title: 'Surveillance des offres locales',
+                desc: '90 offres camerounaises indexées depuis LinkedIn, Notion et sources privées. Les workflows filtrent le spam et taguent les priorités.',
               },
               {
-                icon: '📊',
-                title: 'Suivi en temps réel',
-                desc: 'Dashboard complet: qui a vu ton CV, qui a ignoré, les offres en cours d\'examen. Zéro surprise.',
+                icon: '🔐',
+                title: 'Souveraineté des données',
+                desc: 'Traefik, Docker, Postgres : tout tourne sur ton VPS. Aucun SaaS tiers pour stocker ton historique de candidatures.',
               },
               {
-                icon: '🌍',
-                title: 'Aggrégation locale',
-                desc: 'Scrape LinkedIn, Facebook, offres privées, emails. Toutes les offres camerounaises en un seul endroit.',
+                icon: '📈',
+                title: 'Analytics temps réel',
+                desc: 'Le dashboard Next.js consomme directement les sessions et applications enregistrées par n8n pour un suivi minute par minute.',
               },
             ].map((item, i) => (
               <motion.div
@@ -595,14 +595,14 @@ export default function StartPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             {[
-              { value: '12,500+', label: 'Candidats actifs' },
-              { value: '50+', label: 'Candidatures/mois' },
-              { value: '+60%', label: 'Réponses en +' },
-              { value: '68%', label: 'Taux de réponse' },
-              { value: '20h', label: 'Temps sauvegardé/mois' },
-              { value: '18j', label: 'Temps moyen d\'embauche' },
-              { value: '4.9/5', label: 'Satisfaction' },
-              { value: '1,850+', label: 'Emplois trouvés' },
+              { value: '90', label: 'Offres qualifiées dans le pipeline (Nov 2025)' },
+              { value: '6', label: 'Profils bêta actifs' },
+              { value: '6 modules', label: 'Chaîne d’automatisation n8n (1→6)' },
+              { value: '3', label: 'Campagnes d’application déjà déclenchées' },
+              { value: '100%', label: 'Données hébergées sur ton VPS' },
+              { value: '<5 min', label: 'Temps de mise à jour d’un CV personnalisé' },
+              { value: '0 SaaS', label: 'Dépendance pour stocker ton historique' },
+              { value: '24/7', label: 'Monitoring Traefik + alertes n8n' },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -623,7 +623,7 @@ export default function StartPage() {
               href="/onboarding"
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center gap-2 group"
             >
-              Rejoins les 12,500+ candidats
+              Rejoindre la bêta privée
               <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
             </Link>
           </div>
@@ -650,7 +650,7 @@ export default function StartPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-xl text-slate-300 mb-10 leading-relaxed"
           >
-            12,500 candidats ont déjà automatisé leur recherche d'emploi et reçoivent des offres qualifiées chaque jour. C'est gratuit pendant 3 mois. Pas de carte bancaire nécessaire.
+            La cohorte pilote partage ses retours chaque semaine : optimisation des flux n8n, nouvelles sources d’offres, meilleures relances. Inscris-toi, on t’ouvre la porte dès qu’un créneau se libère.
           </motion.p>
 
           <motion.div
@@ -663,7 +663,7 @@ export default function StartPage() {
               href="/onboarding"
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group"
             >
-              Commencer gratuit maintenant
+              Rejoindre la liste d’attente
               <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
             </Link>
           </motion.div>
@@ -687,20 +687,20 @@ export default function StartPage() {
           <div className="space-y-6">
             {[
               {
-                q: 'Est-ce vraiment gratuit?',
-                a: 'Oui. Accès complet gratuit pendant 3 mois. Après, tu paies seulement si tu veux continuer.',
+                q: 'Qui peut rejoindre la bêta ?',
+                a: 'Nous ouvrons progressivement l’accès aux candidats actifs sur le marché camerounais. Inscris-toi et nous t’enverrons un mail dès qu’un slot se libère.',
               },
               {
-                q: 'Combien de temps avant de voir des résultats?',
-                a: 'Les premières candidatures partent en 24h. Les réponses commencent à arriver dans les 3-5 jours.',
+                q: 'Quel est le coût ?',
+                a: 'La bêta est gratuite. Un plan payant sera proposé en 2026, avec hébergement toujours sur ton infrastructure ou la nôtre au choix.',
               },
               {
-                q: 'C\'est sûr? Vais-je recevoir que des arnaque?',
-                a: 'Non. Notre IA détecte les offres douteuses et filtre automatiquement les arnaqueurs connus.',
+                q: 'Puis-je voir les workflows ?',
+                a: 'Oui. Chaque scénario n8n (login, register, update-profile, job analyzer…) est versionné et documenté. Tu peux les importer ou les auditer avant de les lancer.',
               },
               {
-                q: 'Comment ça marche avec LinkedIn?',
-                a: 'Ton profil reste privé. RecruitAI scrape les offres publiques et envoie des candidatures vérifiées.',
+                q: 'D’où viennent les offres ?',
+                a: 'Nous agrégeons LinkedIn, job boards privés, communautés WhatsApp et leads manuels. Les sources sont taguées et filtrées pour éviter les annonces douteuses.',
               },
             ].map((item, i) => (
               <motion.div
@@ -722,12 +722,12 @@ export default function StartPage() {
       <section className="py-16 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Prêt?</h2>
-          <p className="text-slate-300 mb-8">Crée un compte et envoie 50+ candidatures en 24h. Gratuit. Sans risque.</p>
+          <p className="text-slate-300 mb-8">Crée ton profil, déclenche tes premiers workflows et suis leurs résultats depuis un tableau de bord temps réel.</p>
           <Link
             href="/onboarding"
             className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center gap-2 group"
           >
-            Commencer maintenant
+            Lancer le chat onboarding
             <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
           </Link>
         </div>
