@@ -113,26 +113,24 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const profileResponse = await fetch('https://reveilart4arist.com/webhook/get-profile', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ token }),
-    });
+    const sessionRow = await prisma.$queryRaw<{ email: string; user_id: string }[]>`
+      SELECT u.email, u.id as user_id
+      FROM sessions s
+      JOIN users u ON u.id = s.user_id
+      WHERE s.access_token = ${token}
+      AND s.expires_at > NOW()
+      LIMIT 1
+    `;
 
-    const profileData = await profileResponse.json().catch(() => ({}));
-
-    if (!profileResponse.ok || !profileData?.success || !profileData?.data?.user?.email) {
+    if (!sessionRow.length) {
       return NextResponse.json(
-        { success: false, error: 'Token invalide' },
-        { status: profileResponse.status || 401 }
+        { success: false, error: 'Token invalide ou expiré' },
+        { status: 401 }
       );
     }
 
-    const email: string = profileData.data.user.email;
-    const existingCandidate = profileData.data.candidate;
+    const email = sessionRow[0].email;
+    const existingCandidate = await prisma.candidate.findUnique({ where: { email } });
 
     const coalesce = <T>(value: T | null | undefined, fallback: T) =>
       value === undefined || value === null || value === '' ? fallback : value;
