@@ -300,6 +300,7 @@ export default function ChatOnboarding() {
 
   const submitProfile = async () => {
     try {
+      setIsLoading(true);
       console.log('Submitting profile data:', formData);
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -314,13 +315,32 @@ export default function ChatOnboarding() {
         return;
       }
 
+      const payload: Record<string, unknown> = {};
+
+      const fieldMapping: Record<string, keyof CandidateFormData> = {
+        currentTitle: 'current_title',
+        location: 'location',
+        yearsExperience: 'years_experience',
+        educationLevel: 'education_level',
+        minSalary: 'min_salary',
+        linkedinUrl: 'linkedin_url',
+        portfolioUrl: 'portfolio_url',
+      };
+
+      Object.entries(fieldMapping).forEach(([camelKey, snakeKey]) => {
+        const value = formData[snakeKey] ?? (formData as Record<string, unknown>)[camelKey];
+        if (value !== undefined && value !== null && value !== '') {
+          payload[camelKey] = value;
+        }
+      });
+
       const response = await fetch('/api/profiles/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -329,8 +349,7 @@ export default function ChatOnboarding() {
         throw new Error(data.error || 'Failed to create profile');
       }
 
-      console.log('Profile created successfully:', data.profileId);
-
+      setIsLoading(false);
       router.push('/dashboard');
     } catch (err) {
       console.error('Error submitting profile:', err);
@@ -338,6 +357,7 @@ export default function ChatOnboarding() {
         content: `❌ Erreur lors de la création du profil. ${err instanceof Error ? err.message : 'Réessaye.'}`,
         emoji: '🚨',
       });
+      setIsLoading(false);
     }
   };
 
