@@ -293,7 +293,7 @@ export default function StartPage() {
               className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-full"
             >
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-blue-300 text-sm font-semibold">12,500+ candidats actifs</span>
+              <span className="text-blue-300 text-sm font-semibold">Bêta ouverte · Novembre 2025</span>
             </motion.div>
 
             {/* Main Headline */}
@@ -303,7 +303,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-5xl md:text-5xl font-bold mb-6 leading-tight text-left"
             >
-              Envoie <span className="text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">50+ candidatures</span> au lieu de 5
+              Trouve un job plus vite avec un assistant IA pensé pour le Cameroun
             </motion.h1>
 
             {/* Subheading - More Concrete */}
@@ -313,7 +313,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg text-slate-300 mb-8 leading-relaxed text-left"
             >
-              RecruitAI automatise ta recherche d'emploi: trouve les meilleures offres, génère des CVs adaptés à chaque job, et envoie tes candidatures automatiquement.
+              RecruitAI surveille les offres locales, t’aide à remplir ton profil en 3 minutes, personnalise ton CV et suit tes candidatures sur un tableau de bord simple.
             </motion.p>
 
             {/* Key Metrics - Concrete Results */}
@@ -324,9 +324,9 @@ export default function StartPage() {
               className="grid grid-cols-3 gap-3 mb-8"
             >
               {[
-                { metric: '50+', label: 'candidatures' },
-                { metric: '+60%', label: 'réponses' },
-                { metric: '20h', label: 'sauvegardées' },
+                { metric: '6', label: 'candidats accompagnés dans la bêta' },
+                { metric: '90', label: 'offres camerounaises suivies en direct' },
+                { metric: '≈3 min', label: 'pour compléter le chat de démarrage' },
               ].map((item, i) => (
                 <div
                   key={i}
@@ -350,7 +350,7 @@ export default function StartPage() {
                   href="/register"
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg text-white font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition inline-flex items-center justify-center gap-2 group"
                 >
-                  S'inscrire gratuitement
+                  Rejoindre la bêta gratuite
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition" />
                 </Link>
 
@@ -358,13 +358,13 @@ export default function StartPage() {
                   href="/login"
                   className="px-8 py-4 bg-slate-800/50 border-2 border-slate-600 rounded-lg text-white font-semibold text-lg hover:border-cyan-500 hover:bg-slate-800 transition inline-flex items-center justify-center gap-2 group"
                 >
-                  Se connecter
+                  Se connecter à son espace
                 </Link>
               </div>
 
               {/* Social Proof */}
               <p className="text-slate-400 text-sm">
-                ✓ Sans carte bancaire • ✓ Résultats en 24h • ✓ 4.9/5 ⭐
+                ✓ Aucun paiement demandé • ✓ Support WhatsApp • ✓ Accès sur invitation
               </p>
             </motion.div>
           </div>
@@ -393,24 +393,24 @@ export default function StartPage() {
               {[
                 {
                   step: 1,
-                  title: 'Crée ton profil',
-                  desc: 'Réponds à quelques questions simples sur tes compétences et préférences. C\'est rapide et facile.',
-                  time: '2 min',
+                  title: 'Onboarding guidé',
+                  desc: 'Un chat te pose les bonnes questions (expérience, objectifs, salaire). Tes réponses alimentent ton profil automatiquement.',
+                  time: '≈3 min',
                   icon: '📝',
                   color: 'blue',
                 },
                 {
                   step: 2,
-                  title: 'Génère des CVs',
-                  desc: 'Notre IA adapte ton CV pour chaque offre d\'emploi automatiquement. Zero effort.',
-                  time: 'Instant',
+                  title: 'Matching automatique',
+                  desc: 'RecruitAI surveille les nouvelles offres, personnalise ton CV et prépare les messages d’envoi pour chaque poste.',
+                  time: 'En continu',
                   icon: '🤖',
                   color: 'cyan',
                 },
                 {
                   step: 3,
-                  title: 'Candidatures auto',
-                  desc: 'Envoie jusqu\'à 50+ candidatures/mois en 1 clic. Suivi en temps réel de tes réponses.',
+                  title: 'Tableau de bord simple',
+                  desc: 'Tu vois les candidatures envoyées, les réponses reçues et les relances à faire, le tout dans ton espace sécurisé.',
                   time: 'Auto',
                   icon: '✈️',
                   color: 'purple',
@@ -539,34 +539,34 @@ export default function StartPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               {
-                icon: '🤖',
-                title: 'Sélection IA intelligente',
-                desc: 'L\'algorithme filtre les 1000+ offres quotidiennes pour te proposer seulement celles qui correspondent à ton profil. Zéro perte de temps.',
+                icon: '💬',
+                title: 'Un chat facile à utiliser',
+                desc: 'Tu réponds comme dans une discussion WhatsApp et ton profil se remplit tout seul.',
               },
               {
-                icon: '📄',
-                title: 'CVs adaptés = Plus de réponses',
-                desc: 'Chaque CV est personnalisé avec les mots-clés de l\'offre. +60% de chances de réponse prouvé en AB test.',
+                icon: '🤝',
+                title: 'Les bonnes offres, sans le stress',
+                desc: 'RecruitAI surveille les offres camerounaises et ne te montre que celles qui collent à ton parcours.',
               },
               {
-                icon: '⚡',
-                title: 'Automatisation totale',
-                desc: 'Pendant que tu dors, tes candidatures partent automatiquement. Plus besoin de cliquer, remplir, envoyer.',
+                icon: '🧠',
+                title: 'CV et messages personnalisés',
+                desc: 'Chaque CV et chaque mail est adapté à l’offre pour maximiser les retours.',
               },
               {
-                icon: '🎯',
-                title: 'Scoring "arnaqueur" détection',
-                desc: 'Identifie les offres douteuses et les arnaqueurs potentiels. Protège ton temps et ton argent.',
+                icon: '🔔',
+                title: 'Relances automatiques',
+                desc: 'Le service t’indique quand relancer une entreprise et garde l’historique des réponses.',
+              },
+              {
+                icon: '🔐',
+                title: 'Tes données restent chez toi',
+                desc: 'Le projet tourne sur un serveur privé : personne ne revend ton historique.',
               },
               {
                 icon: '📊',
-                title: 'Suivi en temps réel',
-                desc: 'Dashboard complet: qui a vu ton CV, qui a ignoré, les offres en cours d\'examen. Zéro surprise.',
-              },
-              {
-                icon: '🌍',
-                title: 'Aggrégation locale',
-                desc: 'Scrape LinkedIn, Facebook, offres privées, emails. Toutes les offres camerounaises en un seul endroit.',
+                title: 'Un suivi clair',
+                desc: 'Un tableau de bord lisible t’aide à voir ce qui marche et le temps que tu gagnes.',
               },
             ].map((item, i) => (
               <motion.div
@@ -595,14 +595,14 @@ export default function StartPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             {[
-              { value: '12,500+', label: 'Candidats actifs' },
-              { value: '50+', label: 'Candidatures/mois' },
-              { value: '+60%', label: 'Réponses en +' },
-              { value: '68%', label: 'Taux de réponse' },
-              { value: '20h', label: 'Temps sauvegardé/mois' },
-              { value: '18j', label: 'Temps moyen d\'embauche' },
-              { value: '4.9/5', label: 'Satisfaction' },
-              { value: '1,850+', label: 'Emplois trouvés' },
+              { value: '6', label: 'Candidats accompagnés pendant la bêta' },
+              { value: '90', label: 'Offres locales analysées en Nov 2025' },
+              { value: '3', label: 'Campagnes d’envoi déjà réalisées' },
+              { value: '100%', label: 'Données hébergées sur serveur privé' },
+              { value: '<5 min', label: 'Temps pour générer un CV personnalisé' },
+              { value: '24/7', label: 'Surveillance des nouvelles offres' },
+              { value: '0 F CFA', label: 'Coût durant la bêta' },
+              { value: 'WhatsApp', label: 'Canal support + partage des retours' },
             ].map((stat, i) => (
               <motion.div
                 key={i}
