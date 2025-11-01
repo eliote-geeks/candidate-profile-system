@@ -122,14 +122,16 @@ export async function PUT(req: NextRequest) {
       LIMIT 1
     `;
 
-    if (!sessionRow.length) {
+    const emailFromToken = sessionRow[0]?.email;
+    const email = (body.email as string | undefined) ?? emailFromToken;
+
+    if (!email) {
       return NextResponse.json(
-        { success: false, error: 'Token invalide ou expiré' },
-        { status: 401 }
+        { success: false, error: 'Adresse email introuvable pour compléter le profil.' },
+        { status: 400 }
       );
     }
 
-    const email = sessionRow[0].email;
     const existingCandidate = await prisma.candidate.findUnique({ where: { email } });
 
     const coalesce = <T>(value: T | null | undefined, fallback: T) =>
