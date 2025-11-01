@@ -334,22 +334,45 @@ export default function ChatOnboarding() {
         }
       });
 
-      const response = await fetch('/api/profiles/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      let updateOk = false;
+      let updateError: string | undefined;
 
-      const data = await response.json();
+      if (Object.keys(payload).length > 0) {
+        const updateResponse = await fetch('/api/profiles/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create profile');
+        const updateData = await updateResponse.json().catch(() => ({}));
+
+        if (updateResponse.ok && updateData?.success) {
+          updateOk = true;
+        } else {
+          updateError = updateData?.error || 'Impossible de mettre à jour le profil';
+          console.warn('[ChatOnboarding] Update profile failed, fallback to creation:', updateError);
+        }
       }
 
-      setIsLoading(false);
+      if (!updateOk) {
+        const createResponse = await fetch('/api/profiles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const createData = await createResponse.json().catch(() => ({}));
+
+        if (!createResponse.ok || !createData?.success) {
+          throw new Error(createData?.error || updateError || 'Impossible d’enregistrer le profil');
+        }
+      }
+
       router.push('/dashboard');
     } catch (err) {
       console.error('Error submitting profile:', err);
@@ -357,6 +380,7 @@ export default function ChatOnboarding() {
         content: `❌ Erreur lors de la création du profil. ${err instanceof Error ? err.message : 'Réessaye.'}`,
         emoji: '🚨',
       });
+    } finally {
       setIsLoading(false);
     }
   };
