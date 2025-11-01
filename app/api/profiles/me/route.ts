@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { evaluateCandidateProfile } from '@/lib/profileCompletion'
+import { prisma } from '@/lib/prisma'
 
 const FALLBACK_PROFILE = {
   success: true,
@@ -29,57 +30,71 @@ const FALLBACK_PROFILE = {
 
 export async function GET(request: NextRequest) {
   try {
-    // Récupérer le token du header Authorization
     const authHeader = request.headers.get('authorization')
+    const emailHeader = request.headers.get('x-user-email')
     const token = authHeader?.replace('Bearer ', '')
 
-    // Si pas de token, retourner le fallback (pas d'erreur)
-    if (!token) {
-      console.log('No token provided, returning fallback profile')
+    let emailFromToken: string | undefined
+
+    if (token) {
+      try {
+        const sessionRow = await prisma.$queryRaw<{ email: string }[]>`
+          SELECT u.email
+          FROM sessions s
+          JOIN users u ON u.id = s.user_id
+          WHERE s.access_token = ${token}
+          AND s.expires_at > NOW()
+          LIMIT 1
+        `
+
+        emailFromToken = sessionRow[0]?.email
+      } catch (error) {
+        console.error('[API] Unable to verify token in sessions table:', error)
+      }
+    }
+
+    const email = emailHeader ?? emailFromToken
+
+    if (!email) {
+      console.log('[API] GET /profiles/me -> email not resolved, returning fallback')
       return NextResponse.json(FALLBACK_PROFILE, { status: 200 })
     }
 
-    // Appeler le webhook n8n pour récupérer le profil
-    try {
-      console.log('Fetching profile from n8n webhook...')
-      const response = await fetch('https://reveilart4arist.com/webhook/get-profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ token }),
-      })
+    const candidate = await prisma.candidate.findUnique({ where: { email } })
 
-      console.log('Webhook response status:', response.status)
+    const userRow = await prisma.$queryRaw<{ first_name: string | null; last_name: string | null }[]>`
+      SELECT first_name, last_name
+      FROM users
+      WHERE email = ${email}
+      LIMIT 1
+    `
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Webhook returned data:', data.success)
-        if (data.success && data.data) {
-          const completion = evaluateCandidateProfile(data.data.candidate)
-          return NextResponse.json(
-            {
-              success: true,
-              data: {
-                ...data.data,
-                profileCompleted: completion.complete,
-                missingFields: completion.missingFields,
-              },
-            },
-            { status: 200 },
-          )
-        }
-      } else {
-        console.log('Webhook returned non-ok status:', response.status)
-      }
-    } catch (fetchError) {
-      console.error('Webhook fetch error:', fetchError)
+    const completion = evaluateCandidateProfile(candidate)
+
+    const data = {
+      user: {
+        id: candidate?.id ?? 'local-user',
+        email,
+        firstName: userRow[0]?.first_name ?? candidate?.first_name ?? '',
+        lastName: userRow[0]?.last_name ?? candidate?.last_name ?? '',
+        isVerified: true,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      },
+      candidate,
+      profileCompleted: completion.complete,
+      missingFields: completion.missingFields,
+      statistics: {
+        total: 0,
+        sent: 0,
+        responded: 0,
+        interview: 0,
+        accepted: 0,
+      },
+      recentApplications: [],
     }
 
-    // Si le webhook échoue ou n'existe pas, retourner le fallback
-    console.log('Returning fallback profile due to webhook failure or error')
-    return NextResponse.json(FALLBACK_PROFILE, { status: 200 })
+    return NextResponse.json({ success: true, data }, { status: 200 })
   } catch (error) {
     console.error('Erreur dans /api/profiles/me:', error)
     return NextResponse.json(FALLBACK_PROFILE, { status: 200 })

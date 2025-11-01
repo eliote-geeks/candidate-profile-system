@@ -334,6 +334,14 @@ export default function ChatOnboarding() {
         }
       });
 
+      if (formData.email) {
+        payload.email = formData.email;
+      }
+
+      if (!payload.email && typeof (formData as Record<string, unknown>).email === 'string') {
+        payload.email = (formData as Record<string, unknown>).email;
+      }
+
       let updateOk = false;
       let updateError: string | undefined;
 

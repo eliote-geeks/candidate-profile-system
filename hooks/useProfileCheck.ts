@@ -42,11 +42,23 @@ export function useProfileCheck(
       try {
         setIsLoading(true)
         const token = localStorage.getItem('token')
+        const storedUser = localStorage.getItem('user')
+        let userEmail: string | undefined
+
+        if (storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser)
+            userEmail = parsed?.email
+          } catch (parseErr) {
+            console.warn('[useProfileCheck] Unable to parse stored user', parseErr)
+          }
+        }
 
         const response = await fetch('/api/profiles/me', {
           headers: {
             Authorization: token ? `Bearer ${token}` : '',
             'Content-Type': 'application/json',
+            ...(userEmail ? { 'X-User-Email': userEmail } : {}),
           },
         })
 
