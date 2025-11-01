@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, AlertCircle, Check, ChevronDown, User, Briefcase, Target } from 'lucide-react';
 import { ChatMessage } from '@/types/chat';
 import { CHAT_FLOW, WELCOME_MESSAGE, COMPLETION_MESSAGE, VALIDATION_RULES } from '@/lib/chat-config';
+import { useRouter } from 'next/navigation';
 
 // 2025 Design: Minimal, intentional, bold typography
 const fadeInUp = {
@@ -36,6 +37,7 @@ interface CandidateFormData {
 }
 
 export default function ChatOnboarding() {
+  const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<CandidateFormData>({});
@@ -300,10 +302,23 @@ export default function ChatOnboarding() {
     try {
       console.log('Submitting profile data:', formData);
 
-      const response = await fetch('/api/profiles', {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+      if (!token) {
+        addBotMessage({
+          content: '🔒 Merci de te connecter pour finaliser ton profil.',
+        });
+        setError('Connexion requise');
+        router.push('/login?next=/onboarding');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch('/api/profiles/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
@@ -316,9 +331,7 @@ export default function ChatOnboarding() {
 
       console.log('Profile created successfully:', data.profileId);
 
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      window.location.href = data.redirectUrl || '/dashboard';
+      router.push('/dashboard');
     } catch (err) {
       console.error('Error submitting profile:', err);
       addBotMessage({
