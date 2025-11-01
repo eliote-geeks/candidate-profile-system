@@ -1,4 +1,5 @@
 import ChatOnboarding from '@/components/ChatOnboarding';
+import { OnboardingGate } from '@/components/OnboardingGate';
 
 export const metadata = {
   title: 'RecruitAI Cameroun - Créer ton profil',
@@ -8,7 +9,9 @@ export const metadata = {
 export default function OnboardingPage() {
   return (
     <main className="w-full h-screen overflow-hidden">
-      <ChatOnboarding />
+      <OnboardingGate>
+        <ChatOnboarding />
+      </OnboardingGate>
     </main>
   );
 }
