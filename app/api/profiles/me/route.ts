@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { evaluateCandidateProfile } from '@/lib/profileCompletion'
 
 const FALLBACK_PROFILE = {
   success: true,
@@ -13,6 +14,8 @@ const FALLBACK_PROFILE = {
       createdAt: new Date().toISOString(),
     },
     candidate: null,
+    profileCompleted: false,
+    missingFields: [],
     statistics: {
       total: 0,
       sent: 0,
@@ -54,9 +57,17 @@ export async function GET(request: NextRequest) {
         const data = await response.json()
         console.log('Webhook returned data:', data.success)
         if (data.success && data.data) {
+          const completion = evaluateCandidateProfile(data.data.candidate)
           return NextResponse.json(
-            { success: true, data: data.data },
-            { status: 200 }
+            {
+              success: true,
+              data: {
+                ...data.data,
+                profileCompleted: completion.complete,
+                missingFields: completion.missingFields,
+              },
+            },
+            { status: 200 },
           )
         }
       } else {

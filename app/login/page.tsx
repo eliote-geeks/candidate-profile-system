@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -13,10 +13,19 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [justLoggedIn, setJustLoggedIn] = useState(false)
+  const { hasProfile, isLoading } = useProfileCheck(justLoggedIn, { autoRedirect: false })
 
-  // Hook pour vérifier et rediriger en fonction du profil
-  // Ne rediriger que si l'utilisateur vient de se connecter
-  useProfileCheck(justLoggedIn)
+  useEffect(() => {
+    if (!justLoggedIn || isLoading) {
+      return
+    }
+
+    if (hasProfile) {
+      router.push('/dashboard')
+    } else {
+      router.push('/onboarding')
+    }
+  }, [justLoggedIn, hasProfile, isLoading, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -8,6 +8,7 @@ import {
   LogOut, Mail, MapPin, Briefcase, Award, User, Target, Phone,
   Linkedin, Globe, ChevronDown, Plus, X, Trash2, AlertCircle
 } from 'lucide-react';
+import { evaluateCandidateProfile } from '@/lib/profileCompletion';
 
 interface Profile {
   user: {
@@ -54,6 +55,8 @@ interface Profile {
     location: string;
     company_name: string;
   }>;
+  profileCompleted?: boolean;
+  missingFields?: string[];
 }
 
 export default function Dashboard() {
@@ -94,22 +97,22 @@ export default function Dashboard() {
 
         const data = await response.json();
         if (data.success && data.data) {
-          // Check if profile is complete
-          const hasCandidate = data.data?.candidate !== null && data.data?.candidate !== undefined;
-          const profileCompleted = hasCandidate && (
-            data.data.candidate.first_name ||
-            data.data.candidate.current_title ||
-            data.data.candidate.skills?.length > 0
-          );
+          const completion = evaluateCandidateProfile(data.data.candidate);
 
-          // Redirect to onboarding if profile is incomplete
-          if (!profileCompleted) {
-            console.log('[Dashboard] Profile incomplete, redirecting to onboarding');
+          if (!completion.complete) {
+            console.log(
+              '[Dashboard] Profile incomplete, redirecting to onboarding. Missing fields:',
+              completion.missingFields,
+            );
             router.push('/onboarding');
             return;
           }
 
-          setProfile(data.data);
+          setProfile({
+            ...data.data,
+            profileCompleted: completion.complete,
+            missingFields: completion.missingFields,
+          });
         }
       } catch (err) {
         console.error('Error fetching profile:', err);
