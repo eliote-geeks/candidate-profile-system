@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { useProfileCheck } from '@/hooks/useProfileCheck'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -11,6 +12,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [justLoggedIn, setJustLoggedIn] = useState(false)
+
+  // Hook pour vérifier et rediriger en fonction du profil
+  // Ne rediriger que si l'utilisateur vient de se connecter
+  useProfileCheck(justLoggedIn)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,11 +40,12 @@ export default function LoginPage() {
       // Sauvegarder le token et les données utilisateur
       if (data.data && data.data.token) {
         localStorage.setItem('auth_token', data.data.token)
+        localStorage.setItem('token', data.data.token)
         localStorage.setItem('user', JSON.stringify(data.data.user))
       }
 
-      // Redirection vers dashboard
-      router.push('/dashboard')
+      // Marquer comme juste connecté pour déclencher le check de profil
+      setJustLoggedIn(true)
     } catch (err) {
       setError('Une erreur est survenue')
       console.error(err)

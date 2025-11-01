@@ -74,6 +74,13 @@ export default function Dashboard() {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
+
+        // Verify user is authenticated
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
         const response = await fetch('/api/profiles/me', {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
@@ -87,6 +94,21 @@ export default function Dashboard() {
 
         const data = await response.json();
         if (data.success && data.data) {
+          // Check if profile is complete
+          const hasCandidate = data.data?.candidate !== null && data.data?.candidate !== undefined;
+          const profileCompleted = hasCandidate && (
+            data.data.candidate.first_name ||
+            data.data.candidate.current_title ||
+            data.data.candidate.skills?.length > 0
+          );
+
+          // Redirect to onboarding if profile is incomplete
+          if (!profileCompleted) {
+            console.log('[Dashboard] Profile incomplete, redirecting to onboarding');
+            router.push('/onboarding');
+            return;
+          }
+
           setProfile(data.data);
         }
       } catch (err) {
@@ -98,7 +120,7 @@ export default function Dashboard() {
     };
 
     fetchProfile();
-  }, []);
+  }, [router]);
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);

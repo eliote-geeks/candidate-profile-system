@@ -61,11 +61,12 @@ export default function RegisterPage() {
       // Sauvegarder le token et les données utilisateur
       if (data.data && data.data.token) {
         localStorage.setItem('auth_token', data.data.token)
+        localStorage.setItem('token', data.data.token)
         localStorage.setItem('user', JSON.stringify(data.data.user))
       }
 
-      // Redirection vers dashboard
-      router.push('/dashboard')
+      // Redirection vers onboarding pour compléter le profil
+      router.push('/onboarding')
     } catch (err) {
       setError('Une erreur est survenue')
       console.error(err)
