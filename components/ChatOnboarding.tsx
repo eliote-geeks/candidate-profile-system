@@ -358,18 +358,19 @@ export default function ChatOnboarding() {
       }
 
       if (!updateOk) {
-        const createResponse = await fetch('/api/profiles', {
-          method: 'POST',
+        const upsertResponse = await fetch('/api/profiles', {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(formData),
         });
 
-        const createData = await createResponse.json().catch(() => ({}));
+        const upsertData = await upsertResponse.json().catch(() => ({}));
 
-        if (!createResponse.ok || !createData?.success) {
-          throw new Error(createData?.error || updateError || 'Impossible d’enregistrer le profil');
+        if (!upsertResponse.ok || !upsertData?.success) {
+          throw new Error(upsertData?.error || updateError || 'Impossible d’enregistrer le profil');
         }
       }
 

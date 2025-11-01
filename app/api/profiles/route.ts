@@ -99,6 +99,176 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Token requis' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+
+    const profileResponse = await fetch('https://reveilart4arist.com/webhook/get-profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    const profileData = await profileResponse.json().catch(() => ({}));
+
+    if (!profileResponse.ok || !profileData?.success || !profileData?.data?.user?.email) {
+      return NextResponse.json(
+        { success: false, error: 'Token invalide' },
+        { status: profileResponse.status || 401 }
+      );
+    }
+
+    const email: string = profileData.data.user.email;
+    const existingCandidate = profileData.data.candidate;
+
+    const coalesce = <T>(value: T | null | undefined, fallback: T) =>
+      value === undefined || value === null || value === '' ? fallback : value;
+
+    const parseList = (value: unknown, fallback: string[]) => {
+      if (Array.isArray(value)) {
+        return value
+          .map((item) => (typeof item === 'string' ? item.trim() : String(item)))
+          .filter((item) => item.length > 0);
+      }
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+      }
+      return fallback;
+    };
+
+    const firstNameInput = coalesce(
+      body.first_name ?? body.firstName,
+      existingCandidate?.first_name ?? '',
+    );
+    const lastNameInput = coalesce(
+      body.last_name ?? body.lastName,
+      existingCandidate?.last_name ?? '',
+    );
+
+    if (!firstNameInput || !lastNameInput) {
+      return NextResponse.json(
+        { success: false, error: 'Prénom et nom sont requis pour compléter le profil.' },
+        { status: 400 }
+      );
+    }
+
+    const updatedCandidate = await prisma.candidate.upsert({
+      where: { email },
+      update: {
+        first_name: firstNameInput,
+        last_name: lastNameInput,
+        phone: coalesce(body.phone, existingCandidate?.phone ?? null),
+        location: coalesce(body.location, existingCandidate?.location ?? null),
+        current_title: coalesce(
+          body.current_title ?? body.currentTitle,
+          existingCandidate?.current_title ?? null,
+        ),
+        years_experience: body.years_experience !== undefined
+          ? parseInt(body.years_experience, 10)
+          : body.yearsExperience !== undefined
+            ? parseInt(body.yearsExperience, 10)
+            : existingCandidate?.years_experience ?? null,
+        education_level: coalesce(
+          body.education_level ?? body.educationLevel,
+          existingCandidate?.education_level ?? null,
+        ),
+        skills: parseList(body.skills, existingCandidate?.skills ?? []),
+        languages: parseList(body.languages, existingCandidate?.languages ?? []),
+        desired_positions: parseList(
+          body.desired_positions ?? body.desiredPositions,
+          existingCandidate?.desired_positions ?? [],
+        ),
+        desired_sectors: parseList(
+          body.desired_sectors ?? body.desiredSectors,
+          existingCandidate?.desired_sectors ?? [],
+        ),
+        desired_locations: parseList(
+          body.desired_locations ?? body.desiredLocations,
+          existingCandidate?.desired_locations ?? [],
+        ),
+        min_salary: body.min_salary !== undefined
+          ? parseInt(body.min_salary, 10)
+          : body.minSalary !== undefined
+            ? parseInt(body.minSalary, 10)
+            : existingCandidate?.min_salary ?? null,
+        contract_types: parseList(
+          body.contract_types ?? body.contractTypes,
+          existingCandidate?.contract_types ?? [],
+        ),
+        linkedin_url: coalesce(
+          body.linkedin_url ?? body.linkedinUrl,
+          existingCandidate?.linkedin_url ?? null,
+        ),
+        portfolio_url: coalesce(
+          body.portfolio_url ?? body.portfolioUrl,
+          existingCandidate?.portfolio_url ?? null,
+        ),
+        base_cv_url: coalesce(
+          body.base_cv_url ?? body.cvUrl,
+          existingCandidate?.base_cv_url ?? null,
+        ),
+        active: coalesce(body.active, existingCandidate?.active ?? true),
+      },
+      create: {
+        first_name: firstNameInput,
+        last_name: lastNameInput,
+        email,
+        phone: body.phone ?? null,
+        location: body.location ?? null,
+        current_title: body.current_title ?? body.currentTitle ?? null,
+        years_experience: body.years_experience
+          ? parseInt(body.years_experience, 10)
+          : body.yearsExperience
+            ? parseInt(body.yearsExperience, 10)
+            : null,
+        education_level: body.education_level ?? body.educationLevel ?? null,
+        skills: parseList(body.skills, []),
+        languages: parseList(body.languages, []),
+        desired_positions: parseList(body.desired_positions ?? body.desiredPositions, []),
+        desired_sectors: parseList(body.desired_sectors ?? body.desiredSectors, []),
+        desired_locations: parseList(body.desired_locations ?? body.desiredLocations, []),
+        min_salary: body.min_salary
+          ? parseInt(body.min_salary, 10)
+          : body.minSalary
+            ? parseInt(body.minSalary, 10)
+            : null,
+        contract_types: parseList(body.contract_types ?? body.contractTypes, []),
+        linkedin_url: body.linkedin_url ?? body.linkedinUrl ?? null,
+        portfolio_url: body.portfolio_url ?? body.portfolioUrl ?? null,
+        base_cv_url: body.base_cv_url ?? body.cvUrl ?? null,
+        active: body.active ?? true,
+      },
+    });
+
+    return NextResponse.json(
+      { success: true, data: updatedCandidate },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Erreur dans /api/profiles (PUT):', error);
+    return NextResponse.json(
+      { success: false, error: 'Impossible de mettre à jour le profil' },
+      { status: 500 }
+    );
+  }
+}
+
 /**
  * GET /api/profiles
  * Retrieve all candidates (admin only - requires authentication in production)
