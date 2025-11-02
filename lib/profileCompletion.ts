@@ -77,13 +77,21 @@ const getCandidateValue = (candidate: Record<string, unknown>, fieldName: string
     return undefined
   }
 
+  // First try exact match (snake_case)
   if (fieldName in candidate) {
     return candidate[fieldName]
   }
 
+  // Try camelCase version
   const camelKey = toCamelCase(fieldName)
   if (camelKey in candidate) {
     return candidate[camelKey]
+  }
+
+  // Try reverse: if fieldName is camelCase, convert to snake_case and try
+  const snakeKey = fieldName.replace(/[A-Z]/g, (match) => '_' + match.toLowerCase()).replace(/^_/, '')
+  if (snakeKey in candidate) {
+    return candidate[snakeKey]
   }
 
   return undefined

@@ -303,92 +303,51 @@ export default function ChatOnboarding() {
       setIsLoading(true);
       console.log('Submitting profile data:', formData);
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
-      if (!token) {
-        addBotMessage({
-          content: '🔒 Merci de te connecter pour finaliser ton profil.',
-        });
-        setError('Connexion requise');
-        router.push('/login?next=/onboarding');
-        setIsLoading(false);
-        return;
+      // Validate required fields before submission
+      if (!formData.first_name || !formData.email) {
+        throw new Error('Prénom et email sont obligatoires');
       }
 
-      const payload: Record<string, unknown> = {};
-
-      const fieldMapping: Record<string, keyof CandidateFormData> = {
-        currentTitle: 'current_title',
-        location: 'location',
-        yearsExperience: 'years_experience',
-        educationLevel: 'education_level',
-        minSalary: 'min_salary',
-        linkedinUrl: 'linkedin_url',
-        portfolioUrl: 'portfolio_url',
-      };
-
-      Object.entries(fieldMapping).forEach(([camelKey, snakeKey]) => {
-        const value = formData[snakeKey] ?? (formData as Record<string, unknown>)[camelKey];
-        if (value !== undefined && value !== null && value !== '') {
-          payload[camelKey] = value;
-        }
+      // Directly create candidate profile
+      const createResponse = await fetch('/api/profiles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
-      if (formData.email) {
-        payload.email = formData.email;
+      const createData = await createResponse.json().catch(() => ({}));
+
+      if (!createResponse.ok) {
+        const errorMsg = createData?.error || createData?.details || 'Impossible de créer le profil';
+        throw new Error(errorMsg);
       }
 
-      if (!payload.email && typeof (formData as Record<string, unknown>).email === 'string') {
-        payload.email = (formData as Record<string, unknown>).email;
+      if (!createData.success) {
+        throw new Error(createData.error || 'Création échouée');
       }
 
-      let updateOk = false;
-      let updateError: string | undefined;
+      console.log('[ChatOnboarding] Profile created successfully:', createData.profileId);
 
-      if (Object.keys(payload).length > 0) {
-        const updateResponse = await fetch('/api/profiles/update', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
+      // Success - show confirmation
+      addBotMessage({
+        content: `🎉 Bravo ! Ton profil a été créé avec succès. Tu vas être redirigé vers ton tableau de bord...`,
+        emoji: '✨',
+      });
 
-        const updateData = await updateResponse.json().catch(() => ({}));
-
-        if (updateResponse.ok && updateData?.success) {
-          updateOk = true;
-        } else {
-          updateError = updateData?.error || 'Impossible de mettre à jour le profil';
-          console.warn('[ChatOnboarding] Update profile failed, fallback to creation:', updateError);
-        }
-      }
-
-      if (!updateOk) {
-        const upsertResponse = await fetch('/api/profiles', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const upsertData = await upsertResponse.json().catch(() => ({}));
-
-        if (!upsertResponse.ok || !upsertData?.success) {
-          throw new Error(upsertData?.error || updateError || 'Impossible d’enregistrer le profil');
-        }
-      }
+      // Wait a moment before redirecting
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       router.push('/dashboard');
     } catch (err) {
-      console.error('Error submitting profile:', err);
+      console.error('[ChatOnboarding] Error submitting profile:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue';
       addBotMessage({
-        content: `❌ Erreur lors de la création du profil. ${err instanceof Error ? err.message : 'Réessaye.'}`,
+        content: `❌ Erreur lors de la création du profil. ${errorMessage}`,
         emoji: '🚨',
       });
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
