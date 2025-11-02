@@ -402,20 +402,20 @@ export default function HomePage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-1">Prénom</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{profile?.user.firstName}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{profile?.user?.firstName || '-'}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-1">Nom</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{profile?.user.lastName}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{profile?.user?.lastName || '-'}</p>
                       </div>
                       <div className="col-span-2">
                         <p className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-1">Email</p>
-                        <p className="font-medium text-gray-900 dark:text-white break-all">{profile?.user.email}</p>
+                        <p className="font-medium text-gray-900 dark:text-white break-all">{profile?.user?.email || '-'}</p>
                       </div>
                       {profile?.candidate?.location && (
                         <div className="col-span-2">
                           <p className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-1">Localisation</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{profile.candidate.location}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{profile?.candidate?.location || '-'}</p>
                         </div>
                       )}
                     </div>
