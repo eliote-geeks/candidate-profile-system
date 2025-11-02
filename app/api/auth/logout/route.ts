@@ -1,44 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
+/**
+ * POST /api/auth/logout
+ * Invalidate user session and logout
+ * @param req - Request with Authorization header containing Bearer token
+ * @returns Success/error response
+ */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { token } = body
+    // Extract token from Authorization header
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')?.trim()
 
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Token requis' },
-        { status: 400 }
+        { success: false, error: 'Token manquant dans le header Authorization' },
+        { status: 401 }
       )
     }
 
-    // Appeler le webhook n8n pour logout
-    const response = await fetch(
-      'https://reveilart4arist.com/webhook/auth-logout',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ token }),
-      }
-    )
+    console.log('[LOGOUT] Attempting to delete session for token:', token.substring(0, 20) + '...')
 
-    const data = await response.json()
+    // Delete session from database
+    // Using raw query to avoid type issues with prisma
+    const deleteResult = await prisma.$queryRaw<{ id: string }[]>`
+      DELETE FROM sessions
+      WHERE access_token = ${token}
+      RETURNING id
+    `
 
-    // Retourner la réponse du webhook
+    if (!deleteResult || deleteResult.length === 0) {
+      console.warn('[LOGOUT] Session not found for token:', token.substring(0, 20) + '...')
+      return NextResponse.json(
+        { success: false, error: 'Session non trouvée ou déjà expirée' },
+        { status: 401 }
+      )
+    }
+
+    console.log('[LOGOUT] Session deleted successfully:', deleteResult[0].id)
+
     return NextResponse.json(
       {
-        success: data.success === true,
-        message: data.message || 'Déconnexion réussie',
+        success: true,
+        message: 'Déconnexion réussie',
+        sessionId: deleteResult[0].id,
       },
-      { status: response.ok ? 200 : 401 }
+      { status: 200 }
     )
   } catch (error) {
-    console.error('Erreur dans /api/auth/logout:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('[LOGOUT] Error during logout:', errorMessage)
+
     return NextResponse.json(
-      { success: false, error: 'Une erreur est survenue' },
+      {
+        success: false,
+        error: 'Erreur lors de la déconnexion',
+        details: errorMessage,
+      },
       { status: 500 }
     )
   }

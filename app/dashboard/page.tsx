@@ -252,9 +252,44 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        // Call logout API to invalidate session in database
+        try {
+          const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            console.warn('[Logout] Session invalidation failed, but continuing with local logout');
+          } else {
+            const data = await response.json();
+            console.log('[Logout] Session invalidated:', data.sessionId);
+          }
+        } catch (apiError) {
+          console.error('[Logout] API call failed, continuing with local logout:', apiError);
+          // Continue with local logout even if API fails
+        }
+      }
+
+      // Clear local token
+      localStorage.removeItem('token');
+
+      // Redirect to login
+      router.push('/login');
+    } catch (error) {
+      console.error('[Logout] Unexpected error:', error);
+      // Force logout anyway
+      localStorage.removeItem('token');
+      router.push('/login');
+    }
   };
 
   if (loading) {
