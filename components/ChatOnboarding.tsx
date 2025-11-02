@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, AlertCircle, Check, ChevronDown, User, Briefcase, Target, LogOut, UserCircle } from 'lucide-react';
+import { ArrowRight, AlertCircle, Check, ChevronDown, User, Briefcase, Target, LogOut, UserCircle, CheckCircle } from 'lucide-react';
 import { ChatMessage } from '@/types/chat';
 import { CHAT_FLOW, WELCOME_MESSAGE, COMPLETION_MESSAGE, VALIDATION_RULES } from '@/lib/chat-config';
-import { useRouter } from 'next/navigation';
 
 // 2025 Design: Minimal, intentional, bold typography
 const fadeInUp = {
