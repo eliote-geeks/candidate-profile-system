@@ -70,6 +70,7 @@ export default function Dashboard() {
   const [newSkill, setNewSkill] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(true);
 
   const candidate = profile?.candidate;
 
@@ -434,8 +435,42 @@ export default function Dashboard() {
         </header>
 
         {/* Sections */}
-        <div className="flex-1 p-6 sm:p-8">
+        <div className="flex-1 p-6 sm:p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-4">
+            {/* Guidance Banner - 2025 Subtle Intro */}
+            {showGuidance && (
+              <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 p-4 sm:p-6 flex items-start gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare size={24} className="text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-blue-900 mb-1">Bienvenue sur votre tableau de bord</h3>
+                  <p className="text-sm text-blue-800 mb-3">
+                    Votre profil est complété! Vous pouvez maintenant parcourir les offres d'emploi correspondant à votre profil et envoyer vos candidatures.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href="/jobs"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition"
+                    >
+                      <ArrowRight size={16} />
+                      Parcourir les offres
+                    </Link>
+                    <button
+                      onClick={() => setShowGuidance(false)}
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-blue-200 text-blue-700 font-medium text-sm hover:bg-blue-300 transition"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* SECTION 1: Informations Personnelles */}
             <motion.div

@@ -48,6 +48,8 @@ export default function ChatOnboarding() {
   const [isReviewMode, setIsReviewMode] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['personal']));
+  const [profileCompleted, setProfileCompleted] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const toggleSection = (section: string) => {
@@ -72,14 +74,47 @@ export default function ChatOnboarding() {
     scrollToBottom();
   }, [messages]);
 
+  // Check if profile is already completed
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        const response = await fetch('/api/profiles/me', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.data?.profileCompleted) {
+            setProfileCompleted(true);
+            setCheckingProfile(false);
+            return;
+          }
+        }
+        setCheckingProfile(false);
+      } catch (err) {
+        setCheckingProfile(false);
+      }
+    };
+
+    checkProfileCompletion();
+  }, [router]);
+
   // Initialize with welcome message
   useEffect(() => {
-    addBotMessage({
-      content: WELCOME_MESSAGE.content,
-      emoji: WELCOME_MESSAGE.emoji,
-    });
-    setSelectedOptions(new Set());
-  }, []);
+    if (!checkingProfile && !profileCompleted) {
+      addBotMessage({
+        content: WELCOME_MESSAGE.content,
+        emoji: WELCOME_MESSAGE.emoji,
+      });
+      setSelectedOptions(new Set());
+    }
+  }, [checkingProfile, profileCompleted]);
 
   const addBotMessage = (msg: { content: string; emoji?: string }) => {
     setMessages((prev) => [
@@ -352,6 +387,60 @@ export default function ChatOnboarding() {
       setIsLoading(false);
     }
   };
+
+  // Show blocked message if profile is already completed
+  if (profileCompleted && !checkingProfile) {
+    return (
+      <div className="flex h-screen w-full bg-white text-gray-900 items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md text-center p-8 space-y-6"
+        >
+          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
+            <CheckCircle size={32} className="text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 mb-2">
+              Profil complété
+            </h1>
+            <p className="text-gray-600 mb-4">
+              Votre profil a déjà été rempli. Vous pouvez accéder au formulaire depuis votre tableau de bord si vous souhaitez mettre à jour vos informations.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Link
+              href="/dashboard"
+              className="block w-full py-3 rounded-lg bg-gray-900 text-white font-bold hover:bg-gray-800 transition"
+            >
+              Aller au tableau de bord
+            </Link>
+            <Link
+              href="/jobs"
+              className="block w-full py-3 rounded-lg bg-gray-100 text-gray-900 font-bold hover:bg-gray-200 transition"
+            >
+              Parcourir les offres
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (checkingProfile) {
+    return (
+      <div className="flex h-screen w-full bg-white items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="text-center"
+        >
+          <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-gray-900 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Vérification du profil...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full bg-white text-gray-900">

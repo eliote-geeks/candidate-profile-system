@@ -1,0 +1,30 @@
+name: Sync n8n Workflows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'n8n-workflows/**'
+      - '.github/workflows/sync-n8n-workflows.yml'
+
+jobs:
+  sync-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Copy workflows to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          source: "n8n-workflows/*.json"
+          target: "/home/paul/candidate-profile-system/n8n-workflows/"
+
+      - name: Log workflow sync
+        run: |
+          echo "✅ Workflows synced to VPS"
+          echo "Location: /home/paul/candidate-profile-system/n8n-workflows/"
+          echo "Manual import in n8n UI required"

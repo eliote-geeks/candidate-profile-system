@@ -1,0 +1,227 @@
+{
+  "name": "Auth - Register (Final)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth-register",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-register",
+      "name": "Webhook Register",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "auth-register"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraire les données du body\nconst body = $input.item.json.body;\nconst { email, password, firstName, lastName } = body;\n\n// Validation des champs requis\nif (!email || !password || !firstName || !lastName) {\n  return {\n    json: {\n      success: false,\n      error: 'Tous les champs sont requis (email, password, firstName, lastName)'\n    }\n  };\n}\n\n// Validation format email\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\nif (!emailRegex.test(email)) {\n  return {\n    json: {\n      success: false,\n      error: 'Format d\\'email invalide'\n    }\n  };\n}\n\n// Validation longueur password (min 8 caractères)\nif (password.length < 8) {\n  return {\n    json: {\n      success: false,\n      error: 'Le mot de passe doit contenir au moins 8 caractères'\n    }\n  };\n}\n\n// Normaliser l'email en minuscules\nreturn {\n  json: {\n    email: email.toLowerCase().trim(),\n    password: password,\n    firstName: firstName.trim(),\n    lastName: lastName.trim(),\n    validationPassed: true\n  }\n};"
+      },
+      "id": "code-validation",
+      "name": "Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM users WHERE email = '{{ $json.email }}' LIMIT 1",
+        "options": {}
+      },
+      "id": "postgres-check-email",
+      "name": "Check Email Exists",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [680, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Job Automation DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Vérifier si l'email existe déjà\nconst emailCheckResult = $input.first().json;\n\nif (emailCheckResult && emailCheckResult.id) {\n  return {\n    json: {\n      success: false,\n      error: 'Cet email est déjà utilisé'\n    }\n  };\n}\n\n// L'email n'existe pas, on peut continuer\nconst previousData = $('Validation').first().json;\nreturn {\n  json: {\n    ...previousData,\n    emailAvailable: true\n  }\n};"
+      },
+      "id": "code-check-result",
+      "name": "Check Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO users (email, password_hash, first_name, last_name, is_verified, is_active, created_at, updated_at)\nVALUES (\n  '{{ $json.email }}',\n  crypt('{{ $json.password }}', gen_salt('bf')),\n  '{{ $json.firstName }}',\n  '{{ $json.lastName }}',\n  false,\n  true,\n  NOW(),\n  NOW()\n)\nRETURNING id, email, first_name, last_name, is_verified, is_active, created_at",
+        "options": {}
+      },
+      "id": "postgres-insert-user",
+      "name": "Insert User",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Job Automation DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fonction pour générer un token aléatoire sans crypto\nfunction generateToken(length) {\n  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\n  let token = '';\n  for (let i = 0; i < length; i++) {\n    token += chars.charAt(Math.floor(Math.random() * chars.length));\n  }\n  return token + Date.now().toString(36);\n}\n\nconst userData = $input.first().json;\n\n// Générer des tokens aléatoires\nconst accessToken = generateToken(32);\nconst refreshToken = generateToken(32);\n\n// Expiration: 15 minutes pour access_token\nconst expiresAt = new Date();\nexpiresAt.setMinutes(expiresAt.getMinutes() + 15);\n\nreturn {\n  json: {\n    userId: userData.id,\n    accessToken: accessToken,\n    refreshToken: refreshToken,\n    expiresAt: expiresAt.toISOString(),\n    user: {\n      id: userData.id,\n      email: userData.email,\n      firstName: userData.first_name,\n      lastName: userData.last_name,\n      isVerified: userData.is_verified,\n      isActive: userData.is_active,\n      createdAt: userData.created_at\n    }\n  }\n};"
+      },
+      "id": "code-generate-tokens",
+      "name": "Generate Tokens",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (user_id, access_token, refresh_token, expires_at, created_at, updated_at)\nVALUES (\n  '{{ $json.userId }}',\n  '{{ $json.accessToken }}',\n  '{{ $json.refreshToken }}',\n  '{{ $json.expiresAt }}',\n  NOW(),\n  NOW()\n)\nRETURNING id",
+        "options": {}
+      },
+      "id": "postgres-insert-session",
+      "name": "Insert Session",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1560, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Job Automation DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"data\": {\n    \"user\": $('Generate Tokens').first().json.user,\n    \"token\": $('Generate Tokens').first().json.accessToken,\n    \"refreshToken\": $('Generate Tokens').first().json.refreshToken,\n    \"expiresAt\": $('Generate Tokens').first().json.expiresAt\n  }\n} }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Register": {
+      "main": [
+        [
+          {
+            "node": "Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation": {
+      "main": [
+        [
+          {
+            "node": "Check Email Exists",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Email Exists": {
+      "main": [
+        [
+          {
+            "node": "Check Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Result": {
+      "main": [
+        [
+          {
+            "node": "Insert User",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert User": {
+      "main": [
+        [
+          {
+            "node": "Generate Tokens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Tokens": {
+      "main": [
+        [
+          {
+            "node": "Insert Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Session": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-31T00:00:00.000Z",
+  "versionId": "3"
+}

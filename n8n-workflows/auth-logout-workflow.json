@@ -1,0 +1,150 @@
+{
+  "name": "Auth - Logout",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth-logout",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-logout",
+      "name": "Webhook Logout",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "auth-logout"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraire le token du header Authorization\nconst headers = $input.item.json.headers;\nconst authHeader = headers.authorization || headers.Authorization;\n\nif (!authHeader) {\n  return {\n    json: {\n      success: false,\n      error: 'Token manquant. Header Authorization requis'\n    }\n  };\n}\n\n// Extraire le token (format: \"Bearer <token>\")\nlet token = authHeader;\nif (authHeader.startsWith('Bearer ')) {\n  token = authHeader.substring(7);\n}\n\nif (!token || token.trim() === '') {\n  return {\n    json: {\n      success: false,\n      error: 'Token invalide'\n    }\n  };\n}\n\nreturn {\n  json: {\n    token: token.trim(),\n    validationPassed: true\n  }\n};"
+      },
+      "id": "code-extract-token",
+      "name": "Extract Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM sessions WHERE access_token = $1 RETURNING id",
+        "options": {
+          "queryParameters": "={{ [$json.token] }}"
+        }
+      },
+      "id": "postgres-delete-session",
+      "name": "Delete Session",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [680, 300],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Job Automation DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Vérifier si une session a été supprimée\nconst deleteResult = $input.first().json;\n\nif (!deleteResult || !deleteResult.id) {\n  return {\n    json: {\n      success: false,\n      error: 'Session non trouvée ou déjà expirée',\n      deletedCount: 0\n    }\n  };\n}\n\nreturn {\n  json: {\n    success: true,\n    message: 'Déconnexion réussie',\n    deletedSessionId: deleteResult.id\n  }\n};"
+      },
+      "id": "code-check-delete",
+      "name": "Check Delete Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Logout": {
+      "main": [
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Token": {
+      "main": [
+        [
+          {
+            "node": "Delete Session",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Session": {
+      "main": [
+        [
+          {
+            "node": "Check Delete Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Delete Result": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-31T00:00:00.000Z",
+  "versionId": "1"
+}

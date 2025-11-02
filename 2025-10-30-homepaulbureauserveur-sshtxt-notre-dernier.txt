@@ -1,0 +1,16 @@
+
+ ▐▛███▜▌   Claude Code v2.0.29
+▝▜█████▛▘  Haiku 4.5 · Claude Pro
+  ▘▘ ▝▝    /home/paul/Bureau/candidate-profile-system
+══════════════════════════════════════════════════════════ Conversation compacted · ctrl+o for history ══════════════════════════════════════════════════════════
+  ⎿  Read FRONTEND_ADAPTATION_SUMMARY.md (251 lines)
+  ⎿  Read lib/chat-config.ts (229 lines)
+  ⎿  Read CHAT_INTEGRATION.md (215 lines)
+  ⎿  Read components/ChatOnboarding.tsx (448 lines)
+  ⎿  Read prisma/schema.prisma (325 lines)
+  ⎿  Todo list read (6 items)
+  ⎿  Session limit reached ∙ resets 8am
+     /upgrade to increase your usage limit.
+
+
+
