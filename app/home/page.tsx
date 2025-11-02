@@ -229,7 +229,7 @@ export default function HomePage() {
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg">
               {profile?.candidate?.currentTitle ? (
-                <>L'IA recherche les meilleures offres pour vous en tant que <strong>{profile.candidate.currentTitle}</strong></>
+                <>L'IA recherche les meilleures offres pour vous en tant que <strong>{profile?.candidate?.currentTitle}</strong></>
               ) : (
                 <>L'IA analyse votre profil et vous propose les meilleures opportunités</>
               )}
@@ -249,7 +249,7 @@ export default function HomePage() {
               Total candidatures
             </p>
             <p className="text-3xl font-black text-gray-900 dark:text-white">
-              {profile?.statistics.total || 0}
+              {profile?.statistics?.total || 0}
             </p>
           </div>
 
@@ -258,7 +258,7 @@ export default function HomePage() {
               En cours
             </p>
             <p className="text-3xl font-black text-blue-600 dark:text-blue-400">
-              {profile?.statistics.responded || 0}
+              {profile?.statistics?.responded || 0}
             </p>
           </div>
 
@@ -267,7 +267,7 @@ export default function HomePage() {
               Entretiens
             </p>
             <p className="text-3xl font-black text-purple-600 dark:text-purple-400">
-              {profile?.statistics.interview || 0}
+              {profile?.statistics?.interview || 0}
             </p>
           </div>
 
@@ -276,7 +276,7 @@ export default function HomePage() {
               Acceptées
             </p>
             <p className="text-3xl font-black text-green-600 dark:text-green-400">
-              {profile?.statistics.accepted || 0}
+              {profile?.statistics?.accepted || 0}
             </p>
           </div>
         </motion.div>
