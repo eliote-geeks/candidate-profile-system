@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LogOut, Mail, MapPin, Briefcase, Award, User, Target, Phone,
-  Linkedin, Globe, ChevronDown, Plus, X, Trash2, AlertCircle, MessageSquare, Settings
+  Linkedin, Globe, ChevronDown, Plus, X, Trash2, AlertCircle, MessageSquare, Settings, ArrowRight
 } from 'lucide-react';
 import { evaluateCandidateProfile } from '@/lib/profileCompletion';
 
