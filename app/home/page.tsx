@@ -1,7 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -110,6 +108,7 @@ export default function HomePage() {
         setCandidatures(mockCandidatures);
         setLoading(false);
       } catch (err) {
+        console.error('Profile fetch error:', err);
         setLoading(false);
       }
     };
@@ -226,7 +225,7 @@ export default function HomePage() {
 
           <div className="relative z-10">
             <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
-              Bienvenue, {profile?.user.firstName || 'candidat'} ! 👋
+              Bienvenue, {profile?.user?.firstName || 'candidat'} ! 👋
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg">
               {profile?.candidate?.currentTitle ? (
