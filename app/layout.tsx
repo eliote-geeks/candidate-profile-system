@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import './globals.css';
 
 const inter = Inter({
@@ -30,9 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        {children}
+    <html lang="fr" suppressHydrationWarning>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300`}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

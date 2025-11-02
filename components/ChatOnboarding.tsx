@@ -375,7 +375,7 @@ export default function ChatOnboarding() {
       // Wait a moment before redirecting
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      router.push('/dashboard');
+      router.push('/home');
     } catch (err) {
       console.error('[ChatOnboarding] Error submitting profile:', err);
       const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue';

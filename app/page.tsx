@@ -4,8 +4,15 @@ import { useEffect } from 'react';
 
 export default function Home() {
   useEffect(() => {
-    // Redirect to /start
-    window.location.replace('/start');
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Redirect to home if logged in
+      window.location.replace('/home');
+    } else {
+      // Redirect to start if not logged in
+      window.location.replace('/start');
+    }
   }, []);
 
   return (
