@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LogOut, Mail, MapPin, Briefcase, Award, User, Target, Phone,
-  Linkedin, Globe, ChevronDown, Plus, X, Trash2, AlertCircle
+  Linkedin, Globe, ChevronDown, Plus, X, Trash2, AlertCircle, MessageSquare, Settings
 } from 'lucide-react';
 import { evaluateCandidateProfile } from '@/lib/profileCompletion';
 
@@ -325,17 +325,20 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen w-full bg-white text-gray-900">
-      {/* LEFT SIDEBAR */}
-      <div className="hidden lg:flex w-80 flex-col gap-8 border-r border-gray-200 bg-gray-50 p-8">
+      {/* LEFT SIDEBAR - Semantic Navigation */}
+      <nav className="hidden lg:flex w-80 flex-col gap-8 border-r border-gray-200 bg-gray-50 p-8" aria-label="Navigation principale du tableau de bord">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
           <h2 className="text-2xl font-black text-gray-900">RecruitAI</h2>
           <p className="mt-1 text-sm text-gray-500">Votre profil candidat</p>
         </motion.div>
 
+        {/* User Profile Card */}
         {profile?.user && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} aria-label="Informations de l'utilisateur">
             <div className="rounded-lg bg-white p-4 border border-gray-200">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Profil</p>
+              <header className="mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">Profil</h3>
+              </header>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-900">
                   {profile.user.firstName} {profile.user.lastName}
@@ -343,52 +346,92 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-500 break-all">{profile.user.email}</p>
               </div>
             </div>
-          </motion.div>
+          </motion.section>
         )}
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">Actions</p>
+        {/* Navigation Links - 2025 Modern Design */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} aria-label="Navigation et actions">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">Navigation</p>
+          <div className="space-y-2">
+            {/* Complete Profile Link */}
+            <a
+              href="#profile-sections"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-900 hover:bg-gray-100 transition-all group"
+              title="Modifier votre profil complet"
+            >
+              <div className="w-2 h-2 rounded-full bg-gray-400 group-hover:bg-gray-900 transition-colors" />
+              <span>Modifier le profil</span>
+            </a>
+
+            {/* Chat/Onboarding Link */}
+            <Link
+              href="/onboarding"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-900 hover:bg-gray-100 transition-all group"
+              title="Retourner au formulaire d'onboarding pour mettre à jour votre profil"
+            >
+              <MessageSquare size={16} className="text-gray-600 group-hover:text-gray-900 transition-colors" />
+              <span>Compléter votre profil (Chat IA)</span>
+            </Link>
+          </div>
+        </motion.section>
+
+        {/* Actions - Logout & Delete */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} aria-label="Compte et sécurité" className="pt-4 border-t border-gray-200">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">Compte</p>
           <div className="space-y-2">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-all group"
+              title="Se déconnecter et terminer votre session"
+              aria-label="Déconnexion"
             >
-              <LogOut size={16} />
-              Déconnexion
+              <LogOut size={16} className="text-gray-600 group-hover:text-orange-600 transition-colors" />
+              <span className="group-hover:text-orange-700">Déconnexion</span>
             </button>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-all group"
+              title="Supprimer définitivement votre compte"
+              aria-label="Supprimer le compte"
             >
-              <Trash2 size={16} />
-              Supprimer le compte
+              <Trash2 size={16} className="text-red-600 group-hover:text-red-700 transition-colors" />
+              <span>Supprimer le compte</span>
             </button>
           </div>
-        </motion.div>
-      </div>
+        </motion.section>
+      </nav>
 
       {/* MAIN CONTENT */}
       <div className="flex-1 overflow-y-auto flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-6 sm:px-8 py-6 sticky top-0 z-10">
+        {/* Header - Semantic */}
+        <header className="border-b border-gray-200 bg-white px-6 sm:px-8 py-6 sticky top-0 z-10 shadow-sm">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div>
+            <section>
               <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
                 Vérifie ton profil
               </h1>
               <p className="text-sm text-gray-500 mt-1">Revois tes informations et modifie-les si nécessaire</p>
-            </div>
+            </section>
             <div className="lg:hidden flex gap-2">
+              <Link
+                href="/onboarding"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+                title="Retourner à l'onboarding pour compléter votre profil"
+                aria-label="Formulaire de profil"
+              >
+                <MessageSquare size={20} />
+              </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
-                title="Déconnexion"
+                className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition"
+                title="Se déconnecter et terminer votre session"
+                aria-label="Déconnexion"
               >
                 <LogOut size={20} />
               </button>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Sections */}
         <div className="flex-1 p-6 sm:p-8">

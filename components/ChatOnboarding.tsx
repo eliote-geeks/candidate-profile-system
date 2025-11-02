@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, AlertCircle, Check, ChevronDown, User, Briefcase, Target } from 'lucide-react';
+import { ArrowRight, AlertCircle, Check, ChevronDown, User, Briefcase, Target, LogOut, UserCircle } from 'lucide-react';
 import { ChatMessage } from '@/types/chat';
 import { CHAT_FLOW, WELCOME_MESSAGE, COMPLETION_MESSAGE, VALIDATION_RULES } from '@/lib/chat-config';
 import { useRouter } from 'next/navigation';
@@ -357,11 +357,58 @@ export default function ChatOnboarding() {
     <div className="flex h-screen w-full bg-white text-gray-900">
       {/* LEFT SIDEBAR - Progress & Info */}
       <div className="hidden lg:flex w-96 flex-col gap-8 border-r border-gray-200 bg-gray-50 p-12">
-        {/* Logo */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <h2 className="text-2xl font-black text-gray-900">RecruitAI</h2>
-          <p className="mt-1 text-sm text-gray-500">Assistant IA pour candidats</p>
-        </motion.div>
+        {/* Header with Logo and Actions */}
+        <div className="flex flex-col gap-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+            <h2 className="text-2xl font-black text-gray-900">RecruitAI</h2>
+            <p className="mt-1 text-sm text-gray-500">Assistant IA pour candidats</p>
+          </motion.div>
+
+          {/* Action Links - 2025 Modern Style */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex gap-2 pt-2"
+          >
+            <a
+              href="/dashboard"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all text-sm font-medium text-gray-900 group"
+              title="Accéder à votre profil et tableau de bord"
+              aria-label="Profil utilisateur"
+            >
+              <UserCircle size={16} className="text-gray-600 group-hover:text-gray-900 transition-colors" />
+              <span className="hidden sm:inline">Profil</span>
+            </a>
+
+            <button
+              onClick={async () => {
+                const token = localStorage.getItem('token');
+                if (token) {
+                  try {
+                    await fetch('/api/auth/logout', {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    }).catch(err => console.error('Logout request failed:', err));
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                  }
+                }
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+              }}
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-red-400 hover:bg-red-50 transition-all text-sm font-medium text-gray-900 hover:text-red-700 group"
+              title="Se déconnecter et quitter la session"
+              aria-label="Déconnexion"
+            >
+              <LogOut size={16} className="text-gray-600 group-hover:text-red-700 transition-colors" />
+              <span className="hidden sm:inline">Quitter</span>
+            </button>
+          </motion.div>
+        </div>
 
         {/* Progress */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
@@ -422,22 +469,68 @@ export default function ChatOnboarding() {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header - Mobile */}
         <div className="lg:hidden border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-black text-gray-900">RecruitAI</h2>
-              <p className="text-xs text-gray-500">{currentStep + 1}/{CHAT_FLOW.length}</p>
-            </div>
-            <motion.div
-              className="h-2 w-32 rounded-full bg-gray-200 overflow-hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-black text-gray-900">RecruitAI</h2>
+                <p className="text-xs text-gray-500">{currentStep + 1}/{CHAT_FLOW.length}</p>
+              </div>
               <motion.div
-                className="h-full bg-gray-900"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.6 }}
-              />
+                className="h-2 w-20 rounded-full bg-gray-200 overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <motion.div
+                  className="h-full bg-gray-900"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.6 }}
+                />
+              </motion.div>
+            </div>
+
+            {/* Mobile Action Links */}
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex gap-2 justify-end"
+            >
+              <a
+                href="/dashboard"
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 hover:border-gray-900 hover:bg-gray-100 transition-all text-xs font-medium text-gray-900"
+                title="Accéder à votre profil"
+                aria-label="Profil utilisateur"
+              >
+                <UserCircle size={14} />
+                <span>Profil</span>
+              </a>
+              <button
+                onClick={async () => {
+                  const token = localStorage.getItem('token');
+                  if (token) {
+                    try {
+                      await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json',
+                        },
+                      }).catch(err => console.error('Logout request failed:', err));
+                    } catch (error) {
+                      console.error('Logout error:', error);
+                    }
+                  }
+                  localStorage.removeItem('token');
+                  window.location.href = '/login';
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 hover:border-red-400 hover:bg-red-50 transition-all text-xs font-medium text-gray-900 hover:text-red-700"
+                title="Se déconnecter"
+                aria-label="Déconnexion"
+              >
+                <LogOut size={14} />
+                <span>Quitter</span>
+              </button>
             </motion.div>
           </div>
         </div>
